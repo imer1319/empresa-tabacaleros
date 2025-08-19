@@ -15,6 +15,7 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use PhpOffice\PhpWord\Writer\HTML as HTMLWriter;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Exception;
 
 class ImportacionController extends Controller
@@ -531,6 +532,160 @@ class ImportacionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error al generar PDF: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function enviarEmailPdf(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'archivo_excel' => 'required|file|mimes:xlsx,xls',
+            'plantilla_word' => 'required|file|mimes:docx,doc',
+            'fila_index' => 'required|integer|min:0',
+            'campos_reemplazo' => 'required|array',
+            'email_destinatario' => 'required|email'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Datos de validación incorrectos',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            // Procesar archivo Excel
+            $excelFile = $request->file('archivo_excel');
+            $spreadsheet = SpreadsheetIOFactory::load($excelFile->getPathname());
+            $worksheet = $spreadsheet->getActiveSheet();
+
+            // Obtener datos de la fila específica
+            $filaIndex = $request->input('fila_index');
+            $filaReal = $filaIndex + 2; // +2 porque empezamos desde la fila 2 y el índice es 0-based
+
+            $datos = [];
+            $cellIterator = $worksheet->getRowIterator($filaReal, $filaReal)->current()->getCellIterator();
+            $cellIterator->setIterateOnlyExistingCells(false);
+
+            foreach ($cellIterator as $cell) {
+                $datos[] = $cell->getValue();
+            }
+
+            if (empty($datos) || count($datos) < 5) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron datos válidos en la fila especificada'
+                ], 400);
+            }
+
+            // Crear directorio temporal si no existe
+            $directorioTemporal = storage_path('app/temp/plantillas');
+            if (!file_exists($directorioTemporal)) {
+                mkdir($directorioTemporal, 0755, true);
+            }
+
+            // Mover plantilla Word a directorio temporal
+            $wordFile = $request->file('plantilla_word');
+            $nombrePlantilla = 'plantilla_' . time() . '_' . uniqid() . '.docx';
+            $rutaPlantillaCompleta = $directorioTemporal . '/' . $nombrePlantilla;
+            $wordFile->move($directorioTemporal, $nombrePlantilla);
+
+            // Procesar plantilla Word
+            $templateProcessor = new TemplateProcessor($rutaPlantillaCompleta);
+            $camposReemplazo = $request->input('campos_reemplazo');
+
+            // Reemplazar campos en la plantilla
+            foreach ($camposReemplazo as $campo => $indice) {
+                if (isset($datos[$indice])) {
+                    $templateProcessor->setValue($campo, $datos[$indice]);
+                }
+            }
+
+            // Guardar documento procesado
+            $nombreArchivoWord = 'documento_' . time() . '_' . uniqid() . '.docx';
+            $rutaArchivoWord = $directorioTemporal . '/' . $nombreArchivoWord;
+            $templateProcessor->saveAs($rutaArchivoWord);
+
+            // Convertir Word a HTML
+            $phpWord = IOFactory::load($rutaArchivoWord);
+            $htmlWriter = new HTMLWriter($phpWord);
+            $contenidoHtml = $htmlWriter->getContent();
+
+            // Limpiar HTML
+            $contenidoLimpio = strip_tags($contenidoHtml, '<p><br><strong><b><em><i><u><table><tr><td><th><thead><tbody><h1><h2><h3><h4><h5><h6><ul><ol><li>');
+            $contenidoLimpio = preg_replace('/\s+/', ' ', $contenidoLimpio);
+            $contenidoLimpio = trim($contenidoLimpio);
+
+            // Configurar Dompdf
+            $options = new Options();
+            $options->set('defaultFont', 'Arial');
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('isPhpEnabled', true);
+            $dompdf = new Dompdf($options);
+
+            // CSS personalizado
+            $css = '
+                body { font-family: Arial, sans-serif; font-size: 12px; line-height: 1.4; margin: 20px; }
+                p { margin: 8px 0; }
+                table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+                td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; font-weight: bold; }
+                h1, h2, h3, h4, h5, h6 { margin: 15px 0 10px 0; }
+                ul, ol { margin: 10px 0; padding-left: 20px; }
+                li { margin: 5px 0; }
+            ';
+
+            $htmlFinal = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>';
+            $htmlFinal .= $css;
+            $htmlFinal .= '</style></head><body>';
+            $htmlFinal .= $contenidoLimpio;
+            $htmlFinal .= '</body></html>';
+
+            // Generar PDF
+            $dompdf->loadHtml($htmlFinal);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            // Obtener contenido del PDF
+            $pdfContent = $dompdf->output();
+
+            // Generar nombre del archivo
+            $razonSocial = isset($datos[1]) ? $datos[1] : 'documento';
+            $razonSocialLimpia = preg_replace('/[^A-Za-z0-9_-]/', '_', $razonSocial);
+            $nombreArchivoPdf = $razonSocialLimpia . '_' . date('Y-m-d_H-i-s') . '.pdf';
+
+            // Enviar email
+            $emailDestinatario = $request->input('email_destinatario');
+            
+            // Enviar email con PDF adjunto
+            Mail::raw('Se adjunta el documento PDF generado.', function ($message) use ($emailDestinatario, $pdfContent, $nombreArchivoPdf) {
+                $message->to($emailDestinatario)
+                        ->subject('Documento PDF - ' . date('Y-m-d H:i:s'))
+                        ->attachData($pdfContent, $nombreArchivoPdf, [
+                            'mime' => 'application/pdf',
+                        ]);
+            });
+            
+            // Limpiar archivos temporales
+            if (file_exists($rutaPlantillaCompleta)) {
+                unlink($rutaPlantillaCompleta);
+            }
+            if (file_exists($rutaArchivoWord)) {
+                unlink($rutaArchivoWord);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Email enviado exitosamente a ' . $emailDestinatario
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error enviando email con PDF: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al enviar email: ' . $e->getMessage()
             ], 500);
         }
     }

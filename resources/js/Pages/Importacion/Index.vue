@@ -621,6 +621,38 @@
                                                 >
                                                 <span v-else>PDF</span>
                                             </button>
+                                            <button
+                                                @click="
+                                                    enviarEmailPdf(
+                                                        documento.nombre
+                                                    )
+                                                "
+                                                :disabled="
+                                                    enviandoEmail[documento.nombre]
+                                                "
+                                                class="px-2 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center space-x-1"
+                                            >
+                                                <svg
+                                                    class="w-3 h-3"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                                    ></path>
+                                                </svg>
+                                                <span
+                                                    v-if="
+                                                        enviandoEmail[documento.nombre]
+                                                    "
+                                                    >Enviando...</span
+                                                >
+                                                <span v-else>Email</span>
+                                            </button>
                                             <a
                                                 :href="`/importacion/descargar/${documento.nombre}`"
                                                 class="text-blue-600 hover:text-blue-500 text-sm"
@@ -676,6 +708,7 @@ const importando = ref(false);
 const generando = ref(false);
 const generandoPdf = ref(false);
 const generandoPdfIndividual = ref({});
+const enviandoEmail = ref({});
 const generandoPdfDirecto = ref(false);
 const error = ref("");
 const mensaje = ref("");
@@ -972,6 +1005,78 @@ const generarPdfIndividual = async (nombreDocumento) => {
     }
 };
 
+// Enviar email con PDF individual
+const enviarEmailPdf = async (nombreDocumento) => {
+    if (!datosExcel.value || datosExcel.value.length === 0) {
+        error.value = "No hay datos del Excel para procesar";
+        return;
+    }
+
+    if (!archivoExcel.value || !archivoWord.value) {
+        error.value = "Faltan archivos Excel o Word";
+        return;
+    }
+
+    // Solicitar email del destinatario
+    const emailDestinatario = prompt("Ingrese el email del destinatario:");
+    if (!emailDestinatario) {
+        return;
+    }
+
+    // Validar formato de email básico
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailDestinatario)) {
+        error.value = "Por favor ingrese un email válido";
+        return;
+    }
+
+    enviandoEmail.value[nombreDocumento] = true;
+    error.value = "";
+
+    try {
+        // Encontrar el índice del documento en los datos del Excel
+        const filaIndex = documentosGenerados.value.findIndex(doc => doc.nombre === nombreDocumento);
+        
+        if (filaIndex === -1) {
+            error.value = "No se pudo encontrar el documento en los datos";
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("archivo_excel", archivoExcel.value);
+        formData.append("plantilla_word", archivoWord.value);
+        formData.append("fila_index", filaIndex.toString());
+        formData.append("email_destinatario", emailDestinatario);
+        
+        // Enviar campos_reemplazo como campos individuales del array
+        Object.keys(camposReemplazo).forEach(key => {
+            formData.append(`campos_reemplazo[${key}]`, camposReemplazo[key]);
+        });
+
+        const response = await fetch("/importacion/enviar-email-pdf", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRF-TOKEN": document
+                    .querySelector('meta[name="csrf-token"]')
+                    .getAttribute("content"),
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            mensaje.value = data.message || "Email enviado exitosamente";
+        } else {
+            const data = await response.json();
+            error.value = data.message || "Error al enviar email";
+        }
+    } catch (err) {
+        error.value = "Error al enviar email: " + err.message;
+    } finally {
+        enviandoEmail.value[nombreDocumento] = false;
+    }
+};
+
 // Generar PDF directo desde Excel
 const generarPdfDirecto = async () => {
     if (!datosExcel.value || datosExcel.value.length === 0) {
@@ -1054,6 +1159,7 @@ const reiniciar = () => {
     resultadoImportacion.value = null;
     documentosGenerados.value = [];
     generandoPdfIndividual.value = {};
+    enviandoEmail.value = {};
     generandoPdfDirecto.value = false;
     error.value = "";
     mensaje.value = "";

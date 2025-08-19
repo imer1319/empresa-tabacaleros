@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/importacion/descargar/{archivo}', [ImportacionController::class, 'descargarDocumento'])->name('importacion.descargar');
     Route::post('/importacion/generar-pdf-consolidado', [ImportacionController::class, 'generarPdfConsolidado'])->name('importacion.generar-pdf-consolidado');
     Route::post('/importacion/generar-pdf-individual', [ImportacionController::class, 'generarPdfIndividual'])->name('importacion.generar-pdf-individual');
+    Route::post('/importacion/enviar-email-pdf', [ImportacionController::class, 'enviarEmailPdf'])->name('importacion.enviar-email-pdf');
 });
 
 require __DIR__ . '/auth.php';
