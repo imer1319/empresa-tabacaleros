@@ -94,11 +94,16 @@ class DocumentoController extends Controller
         // Manejar archivo si se subió
         if ($request->hasFile('archivo')) {
             $archivo = $request->file('archivo');
-            $nombreArchivo = time() . '_' . $archivo->getClientOriginalName();
+            $extension = $archivo->getClientOriginalExtension();
+            
+            // Crear nombre del archivo: nombre_documento_extension
+            $nombreDocumento = str_replace(' ', '_', $request->nombre);
+            $nombreArchivo = $nombreDocumento . '.' . $extension;
+            
             $rutaArchivo = $archivo->storeAs('documentos', $nombreArchivo, 'public');
 
             $documento->archivo_path = $rutaArchivo;
-            $documento->archivo_nombre = $archivo->getClientOriginalName();
+            $documento->archivo_nombre = $nombreArchivo;
             $documento->archivo_tamaño = $archivo->getSize();
             $documento->estado = 'entregado';
         } else {
@@ -164,11 +169,16 @@ class DocumentoController extends Controller
             }
 
             $archivo = $request->file('archivo');
-            $nombreArchivo = time() . '_' . $archivo->getClientOriginalName();
+            $extension = $archivo->getClientOriginalExtension();
+            
+            // Crear nombre del archivo: nombre_documento_extension
+            $nombreDocumento = str_replace(' ', '_', $request->nombre);
+            $nombreArchivo = $nombreDocumento . '.' . $extension;
+            
             $rutaArchivo = $archivo->storeAs('documentos', $nombreArchivo, 'public');
 
             $documento->archivo_path = $rutaArchivo;
-            $documento->archivo_nombre = $archivo->getClientOriginalName();
+            $documento->archivo_nombre = $nombreArchivo;
             $documento->archivo_tamaño = $archivo->getSize();
         }
 

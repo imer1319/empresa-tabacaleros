@@ -25,7 +25,7 @@ class Productor extends Model
     // Relación con documentos
     public function documentos()
     {
-        return $this->hasMany(Documento::class);
+        return $this->hasMany(Documento::class)->orderBy('created_at', 'desc');
     }
 
     // // Relación con comunicaciones

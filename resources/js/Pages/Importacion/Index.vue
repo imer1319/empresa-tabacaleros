@@ -300,143 +300,6 @@
                                 </div>
                             </div>
 
-                            <!-- Configuración de campos para Word -->
-                            <div class="bg-white border rounded-lg p-4">
-                                <h4
-                                    class="text-sm font-medium text-gray-900 mb-4"
-                                >
-                                    Configuración de Campos para Plantilla Word
-                                </h4>
-                                <div
-                                    class="grid grid-cols-1 md:grid-cols-2 gap-4"
-                                >
-                                    <div>
-                                        <label
-                                            class="block text-sm font-medium text-gray-700 mb-1"
-                                            >Campo {fet_numero}</label
-                                        >
-                                        <select
-                                            v-model="camposReemplazo.fet_numero"
-                                            class="w-full border-gray-300 rounded-md shadow-sm"
-                                        >
-                                            <option value="fet_numero">
-                                                FET N°
-                                            </option>
-                                            <option value="razon_social">
-                                                Razón Social
-                                            </option>
-                                            <option value="calle_dom_real">
-                                                Dirección
-                                            </option>
-                                            <option value="localidad">
-                                                Localidad
-                                            </option>
-                                            <option value="cuit">CUIT</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label
-                                            class="block text-sm font-medium text-gray-700 mb-1"
-                                            >Campo {razon_social}</label
-                                        >
-                                        <select
-                                            v-model="
-                                                camposReemplazo.razon_social
-                                            "
-                                            class="w-full border-gray-300 rounded-md shadow-sm"
-                                        >
-                                            <option value="fet_numero">
-                                                FET N°
-                                            </option>
-                                            <option value="razon_social">
-                                                Razón Social
-                                            </option>
-                                            <option value="calle_dom_real">
-                                                Dirección
-                                            </option>
-                                            <option value="localidad">
-                                                Localidad
-                                            </option>
-                                            <option value="cuit">CUIT</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label
-                                            class="block text-sm font-medium text-gray-700 mb-1"
-                                            >Campo {calle_dom_real}</label
-                                        >
-                                        <select
-                                            v-model="
-                                                camposReemplazo.calle_dom_real
-                                            "
-                                            class="w-full border-gray-300 rounded-md shadow-sm"
-                                        >
-                                            <option value="fet_numero">
-                                                FET N°
-                                            </option>
-                                            <option value="razon_social">
-                                                Razón Social
-                                            </option>
-                                            <option value="calle_dom_real">
-                                                Dirección
-                                            </option>
-                                            <option value="localidad">
-                                                Localidad
-                                            </option>
-                                            <option value="cuit">CUIT</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label
-                                            class="block text-sm font-medium text-gray-700 mb-1"
-                                            >Campo {localidad}</label
-                                        >
-                                        <select
-                                            v-model="camposReemplazo.localidad"
-                                            class="w-full border-gray-300 rounded-md shadow-sm"
-                                        >
-                                            <option value="fet_numero">
-                                                FET N°
-                                            </option>
-                                            <option value="razon_social">
-                                                Razón Social
-                                            </option>
-                                            <option value="calle_dom_real">
-                                                Dirección
-                                            </option>
-                                            <option value="localidad">
-                                                Localidad
-                                            </option>
-                                            <option value="cuit">CUIT</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label
-                                            class="block text-sm font-medium text-gray-700 mb-1"
-                                            >Campo {cuit}</label
-                                        >
-                                        <select
-                                            v-model="camposReemplazo.cuit"
-                                            class="w-full border-gray-300 rounded-md shadow-sm"
-                                        >
-                                            <option value="fet_numero">
-                                                FET N°
-                                            </option>
-                                            <option value="razon_social">
-                                                Razón Social
-                                            </option>
-                                            <option value="calle_dom_real">
-                                                Dirección
-                                            </option>
-                                            <option value="localidad">
-                                                Localidad
-                                            </option>
-                                            <option value="cuit">CUIT</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
                             <div class="flex justify-between">
                                 <button
                                     @click="volverPaso1"
@@ -596,7 +459,9 @@
                                                     )
                                                 "
                                                 :disabled="
-                                                    generandoPdfIndividual[documento.nombre]
+                                                    generandoPdfIndividual[
+                                                        documento.nombre
+                                                    ]
                                                 "
                                                 class="px-2 py-1 bg-orange-600 text-white text-xs rounded-md hover:bg-orange-700 disabled:opacity-50 flex items-center space-x-1"
                                             >
@@ -615,7 +480,9 @@
                                                 </svg>
                                                 <span
                                                     v-if="
-                                                        generandoPdfIndividual[documento.nombre]
+                                                        generandoPdfIndividual[
+                                                            documento.nombre
+                                                        ]
                                                     "
                                                     >PDF...</span
                                                 >
@@ -628,7 +495,9 @@
                                                     )
                                                 "
                                                 :disabled="
-                                                    enviandoEmail[documento.nombre]
+                                                    enviandoEmail[
+                                                        documento.nombre
+                                                    ]
                                                 "
                                                 class="px-2 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 disabled:opacity-50 flex items-center space-x-1"
                                             >
@@ -647,7 +516,9 @@
                                                 </svg>
                                                 <span
                                                     v-if="
-                                                        enviandoEmail[documento.nombre]
+                                                        enviandoEmail[
+                                                            documento.nombre
+                                                        ]
                                                     "
                                                     >Enviando...</span
                                                 >
@@ -948,8 +819,10 @@ const generarPdfIndividual = async (nombreDocumento) => {
 
     try {
         // Encontrar el índice del documento en los datos del Excel
-        const filaIndex = documentosGenerados.value.findIndex(doc => doc.nombre === nombreDocumento);
-        
+        const filaIndex = documentosGenerados.value.findIndex(
+            (doc) => doc.nombre === nombreDocumento
+        );
+
         if (filaIndex === -1) {
             error.value = "No se pudo encontrar el documento en los datos";
             return;
@@ -959,9 +832,9 @@ const generarPdfIndividual = async (nombreDocumento) => {
         formData.append("archivo_excel", archivoExcel.value);
         formData.append("plantilla_word", archivoWord.value);
         formData.append("fila_index", filaIndex.toString());
-        
+
         // Enviar campos_reemplazo como campos individuales del array
-        Object.keys(camposReemplazo).forEach(key => {
+        Object.keys(camposReemplazo).forEach((key) => {
             formData.append(`campos_reemplazo[${key}]`, camposReemplazo[key]);
         });
 
@@ -1035,8 +908,10 @@ const enviarEmailPdf = async (nombreDocumento) => {
 
     try {
         // Encontrar el índice del documento en los datos del Excel
-        const filaIndex = documentosGenerados.value.findIndex(doc => doc.nombre === nombreDocumento);
-        
+        const filaIndex = documentosGenerados.value.findIndex(
+            (doc) => doc.nombre === nombreDocumento
+        );
+
         if (filaIndex === -1) {
             error.value = "No se pudo encontrar el documento en los datos";
             return;
@@ -1047,9 +922,9 @@ const enviarEmailPdf = async (nombreDocumento) => {
         formData.append("plantilla_word", archivoWord.value);
         formData.append("fila_index", filaIndex.toString());
         formData.append("email_destinatario", emailDestinatario);
-        
+
         // Enviar campos_reemplazo como campos individuales del array
-        Object.keys(camposReemplazo).forEach(key => {
+        Object.keys(camposReemplazo).forEach((key) => {
             formData.append(`campos_reemplazo[${key}]`, camposReemplazo[key]);
         });
 

@@ -250,7 +250,7 @@
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
                                         stroke-width="2"
-                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                                     ></path>
                                 </svg>
                                 Subir Documento
@@ -438,10 +438,7 @@
                                         <p
                                             class="text-sm font-medium text-gray-900"
                                         >
-                                            {{
-                                                documento.archivo ||
-                                                "contrato_siembra_TAB001.pdf"
-                                            }}
+                                            {{ documento.archivo_nombre }}
                                         </p>
                                     </div>
                                 </div>
@@ -713,183 +710,323 @@
             class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
         >
             <div
-                class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+                class="relative top-10 mx-auto p-6 border max-w-2xl shadow-lg rounded-xl bg-white"
             >
-                <div class="mt-3">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">
-                            Agregar Documento
-                        </h3>
-                        <button
-                            @click="closeModal"
-                            class="text-gray-400 hover:text-gray-600"
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-semibold text-gray-900">
+                        Agregar Documento
+                    </h3>
+                    <button
+                        @click="closeModal"
+                        class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
+                    >
+                        <svg
+                            class="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
                         >
-                            <svg
-                                class="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12"
-                                ></path>
-                            </svg>
-                        </button>
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"
+                            ></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <form @submit.prevent="submitDocument" class="space-y-6">
+                    <!-- Sección 1: Información del Documento -->
+                    <div
+                        class="bg-white rounded-lg shadow-sm border border-gray-200"
+                    >
+                        <div class="border-b border-gray-200">
+                            <div class="flex items-center px-6 pt-6">
+                                <div
+                                    class="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-full mr-3"
+                                >
+                                    <svg
+                                        class="w-4 h-4 text-white"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path
+                                            fill-rule="evenodd"
+                                            d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                                            clip-rule="evenodd"
+                                        ></path>
+                                    </svg>
+                                </div>
+                                <h4 class="text-lg font-medium text-gray-900">
+                                    Información del Documento
+                                </h4>
+                            </div>
+                            <div class="p-6">
+                                <div
+                                    class="grid grid-cols-1 md:grid-cols-2 gap-6"
+                                >
+                                    <!-- Nombre del Documento -->
+                                    <div>
+                                        <label
+                                            for="nombre"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                        >
+                                            Nombre del Documento *
+                                        </label>
+                                        <input
+                                            id="nombre"
+                                            v-model="documentForm.nombre"
+                                            type="text"
+                                            required
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    documentForm.errors.nombre,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="documentForm.errors.nombre"
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ documentForm.errors.nombre }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Tipo de Documento -->
+                                    <div>
+                                        <label
+                                            for="tipo"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                        >
+                                            Tipo de Documento
+                                        </label>
+                                        <input
+                                            id="tipo"
+                                            v-model="documentForm.tipo"
+                                            type="text"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    documentForm.errors.tipo,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="documentForm.errors.tipo"
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ documentForm.errors.tipo }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <form @submit.prevent="submitDocument" class="space-y-4">
-                        <!-- Nombre del Documento -->
-                        <div>
-                            <label
-                                for="nombre"
-                                class="block text-sm font-medium text-gray-700"
-                            >
-                                Nombre del Documento *
-                            </label>
-                            <input
-                                id="nombre"
-                                v-model="documentForm.nombre"
-                                type="text"
-                                required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                                :class="{
-                                    'border-red-500':
-                                        documentForm.errors.nombre,
-                                }"
-                            />
-                            <div
-                                v-if="documentForm.errors.nombre"
-                                class="mt-2 text-sm text-red-600"
-                            >
-                                {{ documentForm.errors.nombre }}
+                    <!-- Sección 2: Archivo -->
+                    <div
+                        class="bg-white rounded-lg shadow-sm border border-gray-200"
+                    >
+                        <div class="border-b border-gray-200">
+                            <div class="flex items-center px-6 pt-6">
+                                <div
+                                    class="flex items-center justify-center w-8 h-8 bg-green-600 rounded-full mr-3"
+                                >
+                                    <svg
+                                        class="w-4 h-4 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                        ></path>
+                                    </svg>
+                                </div>
+                                <h4 class="text-lg font-medium text-gray-900">
+                                    Archivo del Documento
+                                </h4>
+                            </div>
+                            <div class="p-6">
+                                <div
+                                    class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center"
+                                >
+                                    <input
+                                        ref="fileInput"
+                                        type="file"
+                                        @change="handleFileChange"
+                                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                        class="hidden"
+                                    />
+                                    <div v-if="!selectedFile">
+                                        <svg
+                                            class="mx-auto h-12 w-12 text-gray-400"
+                                            stroke="currentColor"
+                                            fill="none"
+                                            viewBox="0 0 48 48"
+                                        >
+                                            <path
+                                                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            />
+                                        </svg>
+                                        <p class="mt-2 text-sm text-gray-600">
+                                            <button
+                                                type="button"
+                                                @click="$refs.fileInput.click()"
+                                                class="font-medium text-blue-600 hover:text-blue-500"
+                                            >
+                                                Seleccionar archivo
+                                            </button>
+                                            o arrastra y suelta aquí
+                                        </p>
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            Formatos: PDF, JPG, PNG, DOC, DOCX.
+                                            Máximo: 10MB
+                                        </p>
+                                    </div>
+                                    <div v-else class="text-green-600">
+                                        <svg
+                                            class="mx-auto h-8 w-8"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                clip-rule="evenodd"
+                                            />
+                                        </svg>
+                                        <p class="mt-1 text-sm font-medium">
+                                            {{ selectedFile.name }}
+                                        </p>
+                                        <p class="text-xs text-gray-500">
+                                            {{
+                                                formatFileSize(
+                                                    selectedFile.size
+                                                )
+                                            }}
+                                        </p>
+                                        <button
+                                            type="button"
+                                            @click="removeFile"
+                                            class="mt-1 text-xs text-red-600 hover:text-red-500"
+                                        >
+                                            Remover archivo
+                                        </button>
+                                    </div>
+                                </div>
+                                <div
+                                    v-if="documentForm.errors.archivo"
+                                    class="mt-2 text-sm text-red-600"
+                                >
+                                    {{ documentForm.errors.archivo }}
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Tipo de Documento -->
-                        <div>
-                            <label
-                                for="tipo"
-                                class="block text-sm font-medium text-gray-700"
-                            >
-                                Tipo de Documento
-                            </label>
-                            <input
-                                id="tipo"
-                                v-model="documentForm.tipo"
-                                type="text"
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                                :class="{
-                                    'border-red-500': documentForm.errors.tipo,
-                                }"
-                            />
-                            <div
-                                v-if="documentForm.errors.tipo"
-                                class="mt-2 text-sm text-red-600"
-                            >
-                                {{ documentForm.errors.tipo }}
+                    <!-- Sección 3: Detalles Adicionales -->
+                    <div
+                        class="bg-white rounded-lg shadow-sm border border-gray-200"
+                    >
+                        <div class="border-b border-gray-200">
+                            <div class="flex items-center px-6 pt-6">
+                                <div
+                                    class="flex items-center justify-center w-8 h-8 bg-purple-600 rounded-full mr-3"
+                                >
+                                    <svg
+                                        class="w-4 h-4 text-white"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                        ></path>
+                                    </svg>
+                                </div>
+                                <h4 class="text-lg font-medium text-gray-900">
+                                    Detalles Adicionales
+                                </h4>
+                            </div>
+                            <div class="p-6">
+                                <!-- Observaciones -->
+                                <div class="mb-4">
+                                    <label
+                                        for="observaciones"
+                                        class="block text-sm font-medium text-gray-700 mb-2"
+                                    >
+                                        Observaciones
+                                    </label>
+                                    <textarea
+                                        id="observaciones"
+                                        v-model="documentForm.observaciones"
+                                        rows="3"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                        :class="{
+                                            'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                documentForm.errors
+                                                    .observaciones,
+                                        }"
+                                        placeholder="Ingrese observaciones adicionales..."
+                                    ></textarea>
+                                    <div
+                                        v-if="documentForm.errors.observaciones"
+                                        class="mt-2 text-sm text-red-600"
+                                    >
+                                        {{ documentForm.errors.observaciones }}
+                                    </div>
+                                </div>
+
+                                <!-- Documento Requerido -->
+                                <div class="flex items-center">
+                                    <input
+                                        id="es_requerido"
+                                        v-model="documentForm.es_requerido"
+                                        type="checkbox"
+                                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    />
+                                    <label
+                                        for="es_requerido"
+                                        class="ml-2 block text-sm text-gray-700"
+                                    >
+                                        Documento requerido
+                                    </label>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Archivo -->
-                        <div>
-                            <label
-                                for="archivo"
-                                class="block text-sm font-medium text-gray-700"
+                    <!-- Botones -->
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button
+                            type="button"
+                            @click="closeModal"
+                            class="px-6 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="documentForm.processing || !selectedFile"
+                            class="px-6 py-3 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <span v-if="documentForm.processing"
+                                >Guardando...</span
                             >
-                                Archivo *
-                            </label>
-                            <input
-                                id="archivo"
-                                type="file"
-                                @change="handleFileChange"
-                                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                                required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                                :class="{
-                                    'border-red-500':
-                                        documentForm.errors.archivo,
-                                }"
-                            />
-                            <p class="mt-1 text-sm text-gray-500">
-                                Formatos permitidos: PDF, JPG, PNG, DOC, DOCX.
-                                Tamaño máximo: 10MB
-                            </p>
-                            <div
-                                v-if="documentForm.errors.archivo"
-                                class="mt-2 text-sm text-red-600"
-                            >
-                                {{ documentForm.errors.archivo }}
-                            </div>
-                        </div>
-
-                        <!-- Observaciones -->
-                        <div>
-                            <label
-                                for="observaciones"
-                                class="block text-sm font-medium text-gray-700"
-                            >
-                                Observaciones
-                            </label>
-                            <textarea
-                                id="observaciones"
-                                v-model="documentForm.observaciones"
-                                rows="3"
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                                :class="{
-                                    'border-red-500':
-                                        documentForm.errors.observaciones,
-                                }"
-                            ></textarea>
-                            <div
-                                v-if="documentForm.errors.observaciones"
-                                class="mt-2 text-sm text-red-600"
-                            >
-                                {{ documentForm.errors.observaciones }}
-                            </div>
-                        </div>
-
-                        <!-- Documento Requerido -->
-                        <div class="flex items-center">
-                            <input
-                                id="es_requerido"
-                                v-model="documentForm.es_requerido"
-                                type="checkbox"
-                                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                            />
-                            <label
-                                for="es_requerido"
-                                class="ml-2 block text-sm text-gray-700"
-                            >
-                                Documento requerido
-                            </label>
-                        </div>
-
-                        <!-- Botones -->
-                        <div class="flex justify-end space-x-3 pt-4">
-                            <button
-                                type="button"
-                                @click="closeModal"
-                                class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="submit"
-                                :disabled="documentForm.processing"
-                                class="px-4 py-2 bg-indigo-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-                            >
-                                {{
-                                    documentForm.processing
-                                        ? "Guardando..."
-                                        : "Guardar Documento"
-                                }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                            <span v-else>Guardar Documento</span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -1024,6 +1161,7 @@ const props = defineProps({
 const showModal = ref(false);
 const showCommunicationModal = ref(false);
 const activeTab = ref("documentos");
+const selectedFile = ref(null);
 
 // Datos de ejemplo para comunicaciones
 const comunicaciones = ref([
@@ -1122,8 +1260,27 @@ const handleFileChange = (event) => {
             return;
         }
 
+        selectedFile.value = file;
         documentForm.archivo = file;
     }
+};
+
+const removeFile = () => {
+    selectedFile.value = null;
+    documentForm.archivo = null;
+    // Reset file input if it exists
+    const fileInput = document.querySelector('input[type="file"]');
+    if (fileInput) {
+        fileInput.value = "";
+    }
+};
+
+const formatFileSize = (bytes) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
 const submitDocument = () => {
@@ -1141,6 +1298,7 @@ const submitDocument = () => {
 
 const closeModal = () => {
     showModal.value = false;
+    selectedFile.value = null;
     documentForm.reset();
     documentForm.clearErrors();
 };
