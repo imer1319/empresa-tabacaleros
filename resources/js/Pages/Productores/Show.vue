@@ -414,6 +414,7 @@
                                             class="text-sm font-medium text-gray-900"
                                         >
                                             {{
+                                                formatDateOnly(documento.fecha_entrega) ||
                                                 formatDate(documento.created_at)
                                             }}
                                         </p>
@@ -426,8 +427,8 @@
                                             class="text-sm font-medium text-gray-900"
                                         >
                                             {{
-                                                documento.fecha_vencimiento ||
-                                                "30/12/2024"
+                                                formatDateOnly(documento.fecha_vencimiento) ||
+                                                "No especificada"
                                             }}
                                         </p>
                                     </div>
@@ -817,6 +818,78 @@
                                         >
                                             {{ documentForm.errors.tipo }}
                                         </div>
+                                    </div>
+                                </div>
+
+                                <!-- Estado y Fechas -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                    <!-- Estado -->
+                                    <div>
+                                        <label
+                                            for="estado"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                        >
+                                            Estado
+                                        </label>
+                                        <select
+                                            id="estado"
+                                            v-model="documentForm.estado"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                        >
+                                            <option value="pendiente">Pendiente</option>
+                                            <option value="entregado">Entregado</option>
+                                            <option value="aprobado">Aprobado</option>
+                                            <option value="rechazado">Rechazado</option>
+                                            <option value="vencido">Vencido</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Fecha de Entrega -->
+                                    <div>
+                                        <label
+                                            for="fecha_entrega"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                        >
+                                            Fecha de Entrega
+                                        </label>
+                                        <input
+                                            id="fecha_entrega"
+                                            v-model="documentForm.fecha_entrega"
+                                            type="date"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                        />
+                                    </div>
+
+                                    <!-- Fecha de Revisión -->
+                                    <div>
+                                        <label
+                                            for="fecha_revision"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                        >
+                                            Fecha de Revisión
+                                        </label>
+                                        <input
+                                            id="fecha_revision"
+                                            v-model="documentForm.fecha_revision"
+                                            type="date"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                        />
+                                    </div>
+
+                                    <!-- Fecha de Vencimiento -->
+                                    <div>
+                                        <label
+                                            for="fecha_vencimiento"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                        >
+                                            Fecha de Vencimiento
+                                        </label>
+                                        <input
+                                            id="fecha_vencimiento"
+                                            v-model="documentForm.fecha_vencimiento"
+                                            type="date"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -1222,6 +1295,10 @@ const documentForm = useForm({
     archivo: null,
     observaciones: "",
     es_requerido: false,
+    estado: "pendiente",
+    fecha_entrega: "",
+    fecha_revision: "",
+    fecha_vencimiento: "",
 });
 
 const communicationForm = useForm({
@@ -1394,6 +1471,16 @@ const formatDate = (dateString) => {
         day: "numeric",
         hour: "2-digit",
         minute: "2-digit",
+    });
+};
+
+const formatDateOnly = (dateString) => {
+    if (!dateString) return "No especificada";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-ES", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
     });
 };
 </script>

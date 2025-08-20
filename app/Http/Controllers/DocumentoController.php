@@ -66,10 +66,12 @@ class DocumentoController extends Controller
         $productorId = $request->get('productor_id');
         $productor = $productorId ? Productor::findOrFail($productorId) : null;
         $tiposDocumento = TipoDocumento::activos()->ordenados()->get();
+        $productores = Productor::orderBy('numero_productor')->get();
 
         return Inertia::render('Documentos/Create', [
             'productor' => $productor,
-            'tiposDocumento' => $tiposDocumento
+            'tiposDocumento' => $tiposDocumento,
+            'productores' => $productores
         ]);
     }
 
@@ -85,8 +87,10 @@ class DocumentoController extends Controller
             'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240', // 10MB max
             'observaciones' => 'nullable|string',
             'es_requerido' => 'boolean',
+            'estado' => 'nullable|string|in:pendiente,entregado,aprobado,rechazado,vencido',
             'fecha_entrega' => 'nullable|date',
-            'fecha_vencimiento' => 'nullable|date|after:today'
+            'fecha_revision' => 'nullable|date',
+            'fecha_vencimiento' => 'nullable|date'
         ]);
 
         $documento = new Documento($request->except('archivo'));
@@ -105,14 +109,21 @@ class DocumentoController extends Controller
             $documento->archivo_path = $rutaArchivo;
             $documento->archivo_nombre = $nombreArchivo;
             $documento->archivo_tamaño = $archivo->getSize();
-            $documento->estado = 'entregado';
+            
+            // Si no se especificó estado y se subió archivo, marcar como entregado
+            if (!$request->estado) {
+                $documento->estado = 'entregado';
+            }
         } else {
-            $documento->estado = 'pendiente';
+            // Si no se especificó estado y no hay archivo, marcar como pendiente
+            if (!$request->estado) {
+                $documento->estado = 'pendiente';
+            }
         }
 
         $documento->save();
 
-        return redirect()->route('productores.show', $documento->productor_id)
+        return redirect()->route('documentos.index')
             ->with('success', 'Documento creado exitosamente.');
     }
 
@@ -135,10 +146,12 @@ class DocumentoController extends Controller
     {
         $documento->load(['productor', 'tipoDocumento']);
         $tiposDocumento = TipoDocumento::activos()->ordenados()->get();
+        $productores = Productor::orderBy('numero_productor')->get();
 
         return Inertia::render('Documentos/Edit', [
             'documento' => $documento,
-            'tiposDocumento' => $tiposDocumento
+            'tiposDocumento' => $tiposDocumento,
+            'productores' => $productores
         ]);
     }
 
@@ -204,10 +217,9 @@ class DocumentoController extends Controller
             Storage::disk('public')->delete($documento->archivo_path);
         }
 
-        $productorId = $documento->productor_id;
         $documento->delete();
 
-        return redirect()->route('productores.show', $productorId)
+        return redirect()->route('documentos.index')
             ->with('success', 'Documento eliminado exitosamente.');
     }
 
