@@ -414,7 +414,9 @@
                                             class="text-sm font-medium text-gray-900"
                                         >
                                             {{
-                                                formatDateOnly(documento.fecha_entrega) ||
+                                                formatDateOnly(
+                                                    documento.fecha_entrega
+                                                ) ||
                                                 formatDate(documento.created_at)
                                             }}
                                         </p>
@@ -427,8 +429,9 @@
                                             class="text-sm font-medium text-gray-900"
                                         >
                                             {{
-                                                formatDateOnly(documento.fecha_vencimiento) ||
-                                                "No especificada"
+                                                formatDateOnly(
+                                                    documento.fecha_vencimiento
+                                                ) || "No especificada"
                                             }}
                                         </p>
                                     </div>
@@ -804,33 +807,46 @@
                                         </label>
                                         <select
                                             id="tipo_documento_id"
-                                            v-model="documentForm.tipo_documento_id"
+                                            v-model="
+                                                documentForm.tipo_documento_id
+                                            "
                                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                             :class="{
                                                 'border-red-500 focus:ring-red-500 focus:border-red-500':
-                                                    documentForm.errors.tipo_documento_id,
+                                                    documentForm.errors
+                                                        .tipo_documento_id,
                                             }"
                                         >
-                                            <option value="" disabled>Seleccione un tipo</option>
+                                            <option value="" disabled selected>
+                                                Seleccione un tipo
+                                            </option>
                                             <option
-                                                v-for="tipoDoc in tiposDocumento"
-                                                :key="tipoDoc.id"
-                                                :value="tipoDoc.id"
+                                                v-for="(nombre, id) in tiposDocumento"
+                                                :key="id"
+                                                :value="id"
                                             >
-                                                {{ tipoDoc.nombre }}
+                                                {{ nombre }}
                                             </option>
                                         </select>
                                         <div
-                                            v-if="documentForm.errors.tipo_documento_id"
+                                            v-if="
+                                                documentForm.errors
+                                                    .tipo_documento_id
+                                            "
                                             class="mt-2 text-sm text-red-600"
                                         >
-                                            {{ documentForm.errors.tipo_documento_id }}
+                                            {{
+                                                documentForm.errors
+                                                    .tipo_documento_id
+                                            }}
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Estado y Fechas -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                <div
+                                    class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6"
+                                >
                                     <!-- Estado -->
                                     <div>
                                         <label
@@ -844,11 +860,21 @@
                                             v-model="documentForm.estado"
                                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                         >
-                                            <option value="pendiente">Pendiente</option>
-                                            <option value="entregado">Entregado</option>
-                                            <option value="aprobado">Aprobado</option>
-                                            <option value="rechazado">Rechazado</option>
-                                            <option value="vencido">Vencido</option>
+                                            <option value="pendiente">
+                                                Pendiente
+                                            </option>
+                                            <option value="entregado">
+                                                Entregado
+                                            </option>
+                                            <option value="aprobado">
+                                                Aprobado
+                                            </option>
+                                            <option value="rechazado">
+                                                Rechazado
+                                            </option>
+                                            <option value="vencido">
+                                                Vencido
+                                            </option>
                                         </select>
                                     </div>
 
@@ -878,7 +904,9 @@
                                         </label>
                                         <input
                                             id="fecha_revision"
-                                            v-model="documentForm.fecha_revision"
+                                            v-model="
+                                                documentForm.fecha_revision
+                                            "
                                             type="date"
                                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                         />
@@ -894,7 +922,9 @@
                                         </label>
                                         <input
                                             id="fecha_vencimiento"
-                                            v-model="documentForm.fecha_vencimiento"
+                                            v-model="
+                                                documentForm.fecha_vencimiento
+                                            "
                                             type="date"
                                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                         />
@@ -1237,8 +1267,9 @@ import { ref } from "vue";
 
 const props = defineProps({
     productor: Object,
+    tiposDocumento: Object,
 });
-
+console.log(props.tiposDocumento);
 const showModal = ref(false);
 const showCommunicationModal = ref(false);
 const activeTab = ref("documentos");

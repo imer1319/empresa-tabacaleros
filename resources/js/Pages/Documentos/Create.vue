@@ -16,30 +16,43 @@
 
         <div class="py-12">
             <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                >
                     <form @submit.prevent="submit">
                         <!-- Selección de Productor -->
                         <div class="mb-6">
-                            <label for="productor_id" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label
+                                for="productor_id"
+                                class="block text-sm font-medium text-gray-700 mb-2"
+                            >
                                 Productor *
                             </label>
                             <select
                                 id="productor_id"
                                 v-model="form.productor_id"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                :class="{ 'border-red-500': form.errors.productor_id }"
+                                :class="{
+                                    'border-red-500': form.errors.productor_id,
+                                }"
                                 required
                             >
-                                <option value="" disabled>Seleccione un productor</option>
+                                <option value="" disabled>
+                                    Seleccione un productor
+                                </option>
                                 <option
                                     v-for="prod in productores"
                                     :key="prod.id"
                                     :value="prod.id"
                                 >
-                                    {{ prod.numero_productor }} - {{ prod.nombre_completo }}
+                                    {{ prod.numero_productor }} -
+                                    {{ prod.nombre_completo }}
                                 </option>
                             </select>
-                            <div v-if="form.errors.productor_id" class="mt-1 text-sm text-red-600">
+                            <div
+                                v-if="form.errors.productor_id"
+                                class="mt-1 text-sm text-red-600"
+                            >
                                 {{ form.errors.productor_id }}
                             </div>
                         </div>
@@ -48,7 +61,10 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <!-- Nombre del documento -->
                             <div>
-                                <label for="nombre" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label
+                                    for="nombre"
+                                    class="block text-sm font-medium text-gray-700 mb-2"
+                                >
                                     Nombre del Documento *
                                 </label>
                                 <input
@@ -56,28 +72,41 @@
                                     v-model="form.nombre"
                                     type="text"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                    :class="{ 'border-red-500': form.errors.nombre }"
+                                    :class="{
+                                        'border-red-500': form.errors.nombre,
+                                    }"
                                     placeholder="Ej: Certificado de Calidad"
                                     required
                                 />
-                                <div v-if="form.errors.nombre" class="mt-1 text-sm text-red-600">
+                                <div
+                                    v-if="form.errors.nombre"
+                                    class="mt-1 text-sm text-red-600"
+                                >
                                     {{ form.errors.nombre }}
                                 </div>
                             </div>
 
                             <!-- Tipo de documento -->
                             <div>
-                                <label for="tipo_documento_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label
+                                    for="tipo_documento_id"
+                                    class="block text-sm font-medium text-gray-700 mb-2"
+                                >
                                     Tipo de Documento *
                                 </label>
                                 <select
                                     id="tipo_documento_id"
                                     v-model="form.tipo_documento_id"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                    :class="{ 'border-red-500': form.errors.tipo_documento_id }"
+                                    :class="{
+                                        'border-red-500':
+                                            form.errors.tipo_documento_id,
+                                    }"
                                     required
                                 >
-                                    <option value="" disabled>Seleccione un tipo</option>
+                                    <option value="" disabled selected>
+                                        Seleccione un tipo
+                                    </option>
                                     <option
                                         v-for="tipoDoc in tiposDocumento"
                                         :key="tipoDoc.id"
@@ -86,7 +115,10 @@
                                         {{ tipoDoc.nombre }}
                                     </option>
                                 </select>
-                                <div v-if="form.errors.tipo_documento_id" class="mt-1 text-sm text-red-600">
+                                <div
+                                    v-if="form.errors.tipo_documento_id"
+                                    class="mt-1 text-sm text-red-600"
+                                >
                                     {{ form.errors.tipo_documento_id }}
                                 </div>
                             </div>
@@ -96,7 +128,10 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                             <!-- Fecha de entrega -->
                             <div>
-                                <label for="fecha_entrega" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label
+                                    for="fecha_entrega"
+                                    class="block text-sm font-medium text-gray-700 mb-2"
+                                >
                                     Fecha de Entrega
                                 </label>
                                 <input
@@ -104,16 +139,25 @@
                                     v-model="form.fecha_entrega"
                                     type="date"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                    :class="{ 'border-red-500': form.errors.fecha_entrega }"
+                                    :class="{
+                                        'border-red-500':
+                                            form.errors.fecha_entrega,
+                                    }"
                                 />
-                                <div v-if="form.errors.fecha_entrega" class="mt-1 text-sm text-red-600">
+                                <div
+                                    v-if="form.errors.fecha_entrega"
+                                    class="mt-1 text-sm text-red-600"
+                                >
                                     {{ form.errors.fecha_entrega }}
                                 </div>
                             </div>
 
                             <!-- Fecha de vencimiento -->
                             <div>
-                                <label for="fecha_vencimiento" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label
+                                    for="fecha_vencimiento"
+                                    class="block text-sm font-medium text-gray-700 mb-2"
+                                >
                                     Fecha de Vencimiento
                                 </label>
                                 <input
@@ -121,30 +165,44 @@
                                     v-model="form.fecha_vencimiento"
                                     type="date"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                    :class="{ 'border-red-500': form.errors.fecha_vencimiento }"
+                                    :class="{
+                                        'border-red-500':
+                                            form.errors.fecha_vencimiento,
+                                    }"
                                 />
-                                <div v-if="form.errors.fecha_vencimiento" class="mt-1 text-sm text-red-600">
+                                <div
+                                    v-if="form.errors.fecha_vencimiento"
+                                    class="mt-1 text-sm text-red-600"
+                                >
                                     {{ form.errors.fecha_vencimiento }}
                                 </div>
                             </div>
 
                             <!-- Estado -->
                             <div>
-                                <label for="estado" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label
+                                    for="estado"
+                                    class="block text-sm font-medium text-gray-700 mb-2"
+                                >
                                     Estado
                                 </label>
                                 <select
                                     id="estado"
                                     v-model="form.estado"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                    :class="{ 'border-red-500': form.errors.estado }"
+                                    :class="{
+                                        'border-red-500': form.errors.estado,
+                                    }"
                                 >
                                     <option value="pendiente">Pendiente</option>
                                     <option value="entregado">Entregado</option>
                                     <option value="aprobado">Aprobado</option>
                                     <option value="rechazado">Rechazado</option>
                                 </select>
-                                <div v-if="form.errors.estado" class="mt-1 text-sm text-red-600">
+                                <div
+                                    v-if="form.errors.estado"
+                                    class="mt-1 text-sm text-red-600"
+                                >
                                     {{ form.errors.estado }}
                                 </div>
                             </div>
@@ -152,16 +210,34 @@
 
                         <!-- Archivo -->
                         <div class="mb-6">
-                            <label for="archivo" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label
+                                for="archivo"
+                                class="block text-sm font-medium text-gray-700 mb-2"
+                            >
                                 Archivo del Documento
                             </label>
-                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
+                            <div
+                                class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors"
+                            >
                                 <div class="space-y-1 text-center">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <svg
+                                        class="mx-auto h-12 w-12 text-gray-400"
+                                        stroke="currentColor"
+                                        fill="none"
+                                        viewBox="0 0 48 48"
+                                    >
+                                        <path
+                                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
                                     </svg>
                                     <div class="flex text-sm text-gray-600">
-                                        <label for="archivo" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                        <label
+                                            for="archivo"
+                                            class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                                        >
                                             <span>Subir un archivo</span>
                                             <input
                                                 id="archivo"
@@ -174,38 +250,76 @@
                                         <p class="pl-1">o arrastra y suelta</p>
                                     </div>
                                     <p class="text-xs text-gray-500">
-                                        PDF, JPG, PNG, DOC, DOCX, XLS, XLSX hasta 10MB
+                                        PDF, JPG, PNG, DOC, DOCX, XLS, XLSX
+                                        hasta 10MB
                                     </p>
                                 </div>
                             </div>
-                            <div v-if="selectedFile" class="mt-2 p-3 bg-gray-50 rounded-md">
+                            <div
+                                v-if="selectedFile"
+                                class="mt-2 p-3 bg-gray-50 rounded-md"
+                            >
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center space-x-2">
-                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                        <svg
+                                            class="w-5 h-5 text-gray-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                                            ></path>
                                         </svg>
-                                        <span class="text-sm text-gray-900">{{ selectedFile.name }}</span>
-                                        <span class="text-xs text-gray-500">({{ formatFileSize(selectedFile.size) }})</span>
+                                        <span class="text-sm text-gray-900">{{
+                                            selectedFile.name
+                                        }}</span>
+                                        <span class="text-xs text-gray-500"
+                                            >({{
+                                                formatFileSize(
+                                                    selectedFile.size
+                                                )
+                                            }})</span
+                                        >
                                     </div>
                                     <button
                                         type="button"
                                         @click="removeFile"
                                         class="text-red-600 hover:text-red-500"
                                     >
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        <svg
+                                            class="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M6 18L18 6M6 6l12 12"
+                                            ></path>
                                         </svg>
                                     </button>
                                 </div>
                             </div>
-                            <div v-if="form.errors.archivo" class="mt-1 text-sm text-red-600">
+                            <div
+                                v-if="form.errors.archivo"
+                                class="mt-1 text-sm text-red-600"
+                            >
                                 {{ form.errors.archivo }}
                             </div>
                         </div>
 
                         <!-- Observaciones -->
                         <div class="mb-6">
-                            <label for="observaciones" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label
+                                for="observaciones"
+                                class="block text-sm font-medium text-gray-700 mb-2"
+                            >
                                 Observaciones
                             </label>
                             <textarea
@@ -213,10 +327,15 @@
                                 v-model="form.observaciones"
                                 rows="4"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                :class="{ 'border-red-500': form.errors.observaciones }"
+                                :class="{
+                                    'border-red-500': form.errors.observaciones,
+                                }"
                                 placeholder="Ingrese observaciones adicionales sobre el documento..."
                             ></textarea>
-                            <div v-if="form.errors.observaciones" class="mt-1 text-sm text-red-600">
+                            <div
+                                v-if="form.errors.observaciones"
+                                class="mt-1 text-sm text-red-600"
+                            >
                                 {{ form.errors.observaciones }}
                             </div>
                         </div>
@@ -230,7 +349,10 @@
                                     type="checkbox"
                                     class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                                 />
-                                <label for="es_requerido" class="ml-2 block text-sm text-gray-900">
+                                <label
+                                    for="es_requerido"
+                                    class="ml-2 block text-sm text-gray-900"
+                                >
                                     Este documento es requerido
                                 </label>
                             </div>
@@ -298,7 +420,9 @@ export default {
 
             // Validar tamaño (10MB)
             if (file.size > 10 * 1024 * 1024) {
-                alert("El archivo es demasiado grande. El tamaño máximo es 10MB.");
+                alert(
+                    "El archivo es demasiado grande. El tamaño máximo es 10MB."
+                );
                 event.target.value = "";
                 return;
             }
@@ -338,7 +462,9 @@ export default {
             const k = 1024;
             const sizes = ["Bytes", "KB", "MB", "GB"];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+            return (
+                parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+            );
         },
         submit() {
             this.form.post(route("documentos.store"), {

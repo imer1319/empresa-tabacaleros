@@ -76,10 +76,9 @@ class ProductorController extends Controller
     public function show(Productor $productore)
     {
         $tiposDocumento = TipoDocumento::activos()->ordenados()->get();
-        
         return Inertia::render('Productores/Show', [
             'productor' => $productore->load(['documentos.tipoDocumento']),
-            'tiposDocumento' => $tiposDocumento
+            'tiposDocumento' => $tiposDocumento->pluck('nombre', 'id'),
         ]);
     }
 
