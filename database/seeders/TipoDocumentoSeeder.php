@@ -92,6 +92,16 @@ class TipoDocumentoSeeder extends Seeder
                 'instrucciones' => 'Certificado de participación en cursos de buenas prácticas agrícolas.',
                 'activo' => true,
                 'orden' => 8
+            ],
+            [
+                'nombre' => 'intimacion anses',
+                'descripcion' => 'Documento de intimación generado por ANSES',
+                'es_obligatorio' => true,
+                'formatos_permitidos' => ['pdf', 'docx', 'doc'],
+                'tamaño_maximo' => 5120, // 5MB
+                'instrucciones' => 'Documento de intimación de ANSES generado automáticamente durante la importación.',
+                'activo' => true,
+                'orden' => 9
             ]
         ];
 

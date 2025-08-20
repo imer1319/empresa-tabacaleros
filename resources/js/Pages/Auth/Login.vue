@@ -41,27 +41,10 @@ const submit = () => {
             <!-- Logo y título -->
             <div class="flex flex-col items-center">
                 <div
-                    class="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mb-4"
+                    class="w-48 h-36 rounded-xl flex items-center justify-center my-8"
                 >
-                    <svg
-                        class="w-8 h-8 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                    >
-                        <path
-                            fill-rule="evenodd"
-                            d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0v12h8V4H6z"
-                            clip-rule="evenodd"
-                        />
-                        <path d="M8 6h4v2H8V6zM8 10h4v2H8v-2z" />
-                    </svg>
+                    <img src="/web/logo.png" alt="Logo" class="h-36 w-48" />
                 </div>
-                <h1 class="text-2xl font-bold text-gray-900 mb-2">
-                    CRM Tabaco
-                </h1>
-                <p class="text-gray-600 text-center mb-8">
-                    Sistema de Gestión de Productores
-                </p>
             </div>
 
             <!-- Credenciales de prueba -->

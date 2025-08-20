@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Productor;
+use App\Models\Documento;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;
@@ -16,6 +17,7 @@ use Dompdf\Options;
 use PhpOffice\PhpWord\Writer\HTML as HTMLWriter;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\DocumentosPdf;
 use Exception;
 
 class ImportacionController extends Controller
@@ -199,15 +201,67 @@ class ImportacionController extends Controller
                 // Generar nombre único para el archivo usando razón social
                 $razonSocialLimpia = preg_replace('/[^A-Za-z0-9_-]/', '_', $dato['razon_social'] ?? 'Sin_nombre');
                 $nombreArchivo = $razonSocialLimpia . '_' . time() . '.docx';
-                $rutaDestino = 'documentos_generados/' . $nombreArchivo;
+                $rutaDestino = 'documentos/' . $nombreArchivo;
 
-                // Guardar el documento procesado
-                $templateProcessor->saveAs(storage_path('app/' . $rutaDestino));
+                // Guardar el documento procesado en la misma ruta que los otros documentos
+                $templateProcessor->saveAs(storage_path('app/public/' . $rutaDestino));
+
+                // Buscar el productor por número de productor (FET N°)
+                $numeroProductor = $dato['fet_numero'] ?? null;
+                $productor = null;
+
+                // Log para depuración
+                Log::info("Buscando productor con número: {$numeroProductor}");
+                Log::info("Datos disponibles: " . json_encode(array_keys($dato)));
+
+                if ($numeroProductor) {
+                    $productor = Productor::where('numero_productor', $numeroProductor)->first();
+
+                    if ($productor) {
+                        Log::info("Productor encontrado: {$productor->nombre_completo}");
+                    } else {
+                        Log::warning("No se encontró productor con número exacto: {$numeroProductor}");
+
+                        // Intentar búsqueda alternativa
+                        $productor = Productor::where('numero_productor', 'like', "%{$numeroProductor}%")->first();
+
+                        if ($productor) {
+                            Log::info("Productor encontrado con búsqueda alternativa: {$productor->nombre_completo}");
+                        }
+                    }
+                }
+
+                // Registrar el documento en la base de datos si se encontró el productor
+                if ($productor) {
+                    try {
+                        Documento::create([
+                            'productor_id' => $productor->id,
+                            'nombre' => 'INTIMACION ANSES',
+                            'tipo' => 'intimacion anses',
+                            'estado' => 'entregado',
+                            'archivo_path' => $rutaDestino,
+                            'archivo_nombre' => $nombreArchivo,
+                            'archivo_tamaño' => filesize(storage_path('app/public/' . $rutaDestino)),
+                            'fecha_entrega' => now(),
+                            'es_requerido' => true,
+                            'observaciones' => 'Documento generado automáticamente durante la importación'
+                        ]);
+
+                        Log::info("Documento registrado en BD para productor: {$numeroProductor}");
+                    } catch (\Exception $e) {
+                        Log::error("Error al registrar documento en BD: " . $e->getMessage());
+                    }
+                } else {
+                    Log::warning("No se encontró productor con número: {$numeroProductor}");
+                }
 
                 $documentosGenerados[] = [
                     'nombre' => $nombreArchivo,
                     'ruta' => $rutaDestino,
-                    'productor' => $dato['razon_social'] ?? 'Sin nombre'
+                    'productor' => $dato['razon_social'] ?? 'Sin nombre',
+                    'numero_productor' => $numeroProductor,
+                    'registrado_en_bd' => $productor ? true : false,
+                    'url' => route('importacion.descargar', ['archivo' => $nombreArchivo])
                 ];
             }
 
@@ -234,7 +288,7 @@ class ImportacionController extends Controller
 
     public function descargarDocumento($archivo)
     {
-        $rutaArchivo = storage_path('app/documentos_generados/' . $archivo);
+        $rutaArchivo = storage_path('app/public/documentos/' . $archivo);
 
         if (!file_exists($rutaArchivo)) {
             abort(404, 'Archivo no encontrado');
@@ -282,7 +336,7 @@ class ImportacionController extends Controller
             $primerDocumento = true;
 
             foreach ($documentos as $documento) {
-                $rutaDocumento = storage_path('app/' . $documento['ruta']);
+                $rutaDocumento = storage_path('app/public/' . $documento['ruta']);
 
                 if (!file_exists($rutaDocumento)) {
                     continue;
@@ -657,16 +711,16 @@ class ImportacionController extends Controller
 
             // Enviar email
             $emailDestinatario = $request->input('email_destinatario');
-            
+
             // Enviar email con PDF adjunto
             Mail::raw('Se adjunta el documento PDF generado.', function ($message) use ($emailDestinatario, $pdfContent, $nombreArchivoPdf) {
                 $message->to($emailDestinatario)
-                        ->subject('Documento PDF - ' . date('Y-m-d H:i:s'))
-                        ->attachData($pdfContent, $nombreArchivoPdf, [
-                            'mime' => 'application/pdf',
-                        ]);
+                    ->subject('Documento PDF - ' . date('Y-m-d H:i:s'))
+                    ->attachData($pdfContent, $nombreArchivoPdf, [
+                        'mime' => 'application/pdf',
+                    ]);
             });
-            
+
             // Limpiar archivos temporales
             if (file_exists($rutaPlantillaCompleta)) {
                 unlink($rutaPlantillaCompleta);
@@ -679,7 +733,6 @@ class ImportacionController extends Controller
                 'success' => true,
                 'message' => 'Email enviado exitosamente a ' . $emailDestinatario
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error enviando email con PDF: ' . $e->getMessage());
 
