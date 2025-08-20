@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('documentos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('productor_id')->constrained('productors')->onDelete('cascade');
-            $table->string('nombre'); // Nombre del documento (ej. "Contrato de siembra")
             $table->foreignId('tipo_documento_id')->constrained('tipo_documentos')->onDelete('cascade');
+            $table->string('nombre'); // Nombre del documento (ej. "Contrato de siembra")
             $table->enum('estado', ['pendiente', 'entregado', 'aprobado', 'rechazado', 'vencido'])->default('pendiente');
             $table->string('archivo_path')->nullable(); // Ruta del archivo subido
             $table->string('archivo_nombre')->nullable(); // Nombre original del archivo
