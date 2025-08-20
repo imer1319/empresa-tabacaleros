@@ -94,7 +94,11 @@
                                             {{ documento.nombre }}
                                         </h3>
                                         <p class="text-sm text-gray-600">
-                                            Tipo: {{ documento.tipo_documento?.nombre || 'Sin tipo' }}
+                                            Tipo:
+                                            {{
+                                                documento.tipo_documento
+                                                    ?.nombre || "Sin tipo"
+                                            }}
                                         </p>
                                     </div>
                                 </div>
@@ -112,9 +116,10 @@
                             </div>
 
                             <!-- Información del productor -->
-                            <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-                                <div class="flex items-center space-x-3">
-                                    <div class="flex-shrink-0">
+                            <div class="flex justify-between items-center mb-4">
+                                <!-- Datos del usuario -->
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 mr-1">
                                         <svg
                                             class="w-5 h-5 text-black"
                                             fill="none"
@@ -148,6 +153,101 @@
                                             {{ documento.productor.cuit_cuil }}
                                         </p>
                                     </div>
+                                </div>
+                                <!-- Acciones -->
+                                <div class="flex">
+                                    <Link
+                                        :href="
+                                            route(
+                                                'documentos.show',
+                                                documento.id
+                                            )
+                                        "
+                                        class="inline-flex items-center justify-center p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-lg transition-colors"
+                                        title="Ver documento"
+                                    >
+                                        <svg
+                                            class="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            ></path>
+                                            <path
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            ></path>
+                                        </svg>
+                                    </Link>
+                                    <button
+                                        v-if="documento.archivo_path"
+                                        @click="downloadDocument(documento.id)"
+                                        class="inline-flex items-center justify-center p-2 text-green-600 hover:text-green-900 hover:bg-green-100 rounded-lg transition-colors"
+                                        title="Descargar documento"
+                                    >
+                                        <svg
+                                            class="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            ></path>
+                                        </svg>
+                                    </button>
+                                    <Link
+                                        :href="
+                                            route(
+                                                'documentos.edit',
+                                                documento.id
+                                            )
+                                        "
+                                        class="inline-flex items-center justify-center p-2 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-100 rounded-lg transition-colors"
+                                        title="Editar documento"
+                                    >
+                                        <svg
+                                            class="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            ></path>
+                                        </svg>
+                                    </Link>
+                                    <button
+                                        @click="deleteDocument(documento)"
+                                        class="inline-flex items-center justify-center p-2 text-red-600 hover:text-red-700 hover:bg-red-100 rounded-lg transition-colors"
+                                        title="Eliminar documento"
+                                    >
+                                        <svg
+                                            class="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                            ></path>
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
 
@@ -216,7 +316,7 @@
                             <!-- Observaciones -->
                             <div
                                 v-if="documento.observaciones"
-                                class="mb-4 bg-yellow-50 p-4 rounded-lg"
+                                class="mb-4 bg-gray-50 p-2 rounded-lg"
                             >
                                 <p class="text-sm text-gray-600 mb-1">
                                     <strong>Observaciones:</strong>
@@ -224,96 +324,6 @@
                                 <p class="text-sm text-gray-900">
                                     {{ documento.observaciones }}
                                 </p>
-                            </div>
-
-                            <!-- Acciones -->
-                            <div class="flex justify-end space-x-3">
-                                <Link
-                                    :href="
-                                        route('documentos.show', documento.id)
-                                    "
-                                    class="inline-flex items-center justify-center p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-lg transition-colors"
-                                    title="Ver documento"
-                                >
-                                    <svg
-                                        class="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                        ></path>
-                                        <path
-                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                        ></path>
-                                    </svg>
-                                </Link>
-                                <button
-                                    v-if="documento.archivo_path"
-                                    @click="downloadDocument(documento.id)"
-                                    class="inline-flex items-center justify-center p-2 text-green-600 hover:text-green-900 hover:bg-green-100 rounded-lg transition-colors"
-                                    title="Descargar documento"
-                                >
-                                    <svg
-                                        class="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                        ></path>
-                                    </svg>
-                                </button>
-                                <Link
-                                    :href="
-                                        route('documentos.edit', documento.id)
-                                    "
-                                    class="inline-flex items-center justify-center p-2 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-100 rounded-lg transition-colors"
-                                    title="Editar documento"
-                                >
-                                    <svg
-                                        class="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                        ></path>
-                                    </svg>
-                                </Link>
-                                <button
-                                    @click="deleteDocument(documento)"
-                                    class="inline-flex items-center justify-center p-2 text-red-600 hover:text-red-700 hover:bg-red-100 rounded-lg transition-colors"
-                                    title="Eliminar documento"
-                                >
-                                    <svg
-                                        class="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                        ></path>
-                                    </svg>
-                                </button>
                             </div>
                         </div>
                     </div>

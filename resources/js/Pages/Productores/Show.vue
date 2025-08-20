@@ -821,7 +821,9 @@
                                                 Seleccione un tipo
                                             </option>
                                             <option
-                                                v-for="(nombre, id) in tiposDocumento"
+                                                v-for="(
+                                                    nombre, id
+                                                ) in tiposDocumento"
                                                 :key="id"
                                                 :value="id"
                                             >
@@ -1269,7 +1271,6 @@ const props = defineProps({
     productor: Object,
     tiposDocumento: Object,
 });
-console.log(props.tiposDocumento);
 const showModal = ref(false);
 const showCommunicationModal = ref(false);
 const activeTab = ref("documentos");

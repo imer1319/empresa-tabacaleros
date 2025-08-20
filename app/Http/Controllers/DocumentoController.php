@@ -101,17 +101,17 @@ class DocumentoController extends Controller
         if ($request->hasFile('archivo')) {
             $archivo = $request->file('archivo');
             $extension = $archivo->getClientOriginalExtension();
-            
+
             // Crear nombre del archivo: nombre_documento_extension
             $nombreDocumento = str_replace(' ', '_', $request->nombre);
             $nombreArchivo = $nombreDocumento . '.' . $extension;
-            
+
             $rutaArchivo = $archivo->storeAs('documentos', $nombreArchivo, 'public');
 
             $documento->archivo_path = $rutaArchivo;
             $documento->archivo_nombre = $nombreArchivo;
             $documento->archivo_tamaño = $archivo->getSize();
-            
+
             // Si no se especificó estado y se subió archivo, marcar como entregado
             if (!$request->estado) {
                 $documento->estado = 'entregado';
@@ -124,6 +124,14 @@ class DocumentoController extends Controller
         }
 
         $documento->save();
+
+        // Verificar si la petición viene de la vista del productor
+        $referer = request()->headers->get('referer');
+        $fromProductor = str_contains($referer, '/productores/');
+        if ($fromProductor) {
+            return redirect()->route('productores.show', $documento->productor_id)
+                ->with('success', 'Documento creado exitosamente.');
+        }
 
         return redirect()->route('documentos.index')
             ->with('success', 'Documento creado exitosamente.');
@@ -185,11 +193,11 @@ class DocumentoController extends Controller
 
             $archivo = $request->file('archivo');
             $extension = $archivo->getClientOriginalExtension();
-            
+
             // Crear nombre del archivo: nombre_documento_extension
             $nombreDocumento = str_replace(' ', '_', $request->nombre);
             $nombreArchivo = $nombreDocumento . '.' . $extension;
-            
+
             $rutaArchivo = $archivo->storeAs('documentos', $nombreArchivo, 'public');
 
             $documento->archivo_path = $rutaArchivo;
