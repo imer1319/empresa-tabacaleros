@@ -9,8 +9,8 @@ class Documento extends Model
 {
     protected $fillable = [
         'productor_id',
+        'tipo_documento_id',
         'nombre',
-        'tipo',
         'estado',
         'archivo_path',
         'archivo_nombre',
@@ -40,6 +40,14 @@ class Documento extends Model
     }
 
     /**
+     * Relación con el modelo TipoDocumento
+     */
+    public function tipoDocumento(): BelongsTo
+    {
+        return $this->belongsTo(TipoDocumento::class, 'tipo_documento_id');
+    }
+
+    /**
      * Scope para documentos requeridos
      */
     public function scopeRequeridos($query)
@@ -61,7 +69,7 @@ class Documento extends Model
     public function scopeVencidos($query)
     {
         return $query->where('fecha_vencimiento', '<', now()->toDateString())
-                    ->where('estado', '!=', 'aprobado');
+            ->where('estado', '!=', 'aprobado');
     }
 
     /**
@@ -113,14 +121,6 @@ class Documento extends Model
     }
 
     /**
-     * Relación con el tipo de documento
-     */
-    public function tipoDocumento()
-    {
-        return $this->belongsTo(TipoDocumento::class, 'tipo', 'nombre');
-    }
-
-    /**
      * Relación con el usuario revisor
      */
     public function revisor()
@@ -139,11 +139,11 @@ class Documento extends Model
 
         $bytes = $this->archivo_tamaño;
         $units = ['B', 'KB', 'MB', 'GB'];
-        
+
         for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
             $bytes /= 1024;
         }
-        
+
         return round($bytes, 2) . ' ' . $units[$i];
     }
 }

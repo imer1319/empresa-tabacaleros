@@ -24,7 +24,9 @@ class DocumentoController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nombre', 'like', "%{$search}%")
-                    ->orWhere('tipo', 'like', "%{$search}%")
+                    ->orWhereHas('tipoDocumento', function ($q) use ($search) {
+                        $q->where('nombre', 'like', "%{$search}%");
+                    })
                     ->orWhereHas('productor', function ($q) use ($search) {
                         $q->where('nombre_completo', 'like', "%{$search}%")
                             ->orWhere('numero_productor', 'like', "%{$search}%");
@@ -36,8 +38,8 @@ class DocumentoController extends Controller
             $query->where('estado', $request->estado);
         }
 
-        if ($request->filled('tipo')) {
-            $query->where('tipo', $request->tipo);
+        if ($request->filled('tipo_documento_id')) {
+            $query->where('tipo_documento_id', $request->tipo_documento_id);
         }
 
         if ($request->filled('vencidos')) {
@@ -54,7 +56,7 @@ class DocumentoController extends Controller
         return Inertia::render('Documentos/Index', [
             'documentos' => $documentos,
             'tiposDocumento' => $tiposDocumento,
-            'filters' => $request->only(['search', 'estado', 'tipo', 'vencidos'])
+            'filters' => $request->only(['search', 'estado', 'tipo_documento_id', 'vencidos'])
         ]);
     }
 
@@ -83,7 +85,7 @@ class DocumentoController extends Controller
         $request->validate([
             'productor_id' => 'required|exists:productors,id',
             'nombre' => 'required|string|max:255',
-            'tipo' => 'required|string|max:255',
+            'tipo_documento_id' => 'required|exists:tipo_documentos,id',
             'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240', // 10MB max
             'observaciones' => 'nullable|string',
             'es_requerido' => 'boolean',
@@ -162,7 +164,7 @@ class DocumentoController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'tipo' => 'required|string|max:255',
+            'tipo_documento_id' => 'required|exists:tipo_documentos,id',
             'estado' => 'required|in:pendiente,entregado,aprobado,rechazado,vencido',
             'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
             'observaciones' => 'nullable|string',

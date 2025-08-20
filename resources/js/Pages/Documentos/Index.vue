@@ -37,7 +37,7 @@
                         </div>
                         <div>
                             <select
-                                v-model="searchForm.tipo"
+                                v-model="searchForm.tipo_documento_id"
                                 class="px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                                 @change="search"
                             >
@@ -45,7 +45,7 @@
                                 <option
                                     v-for="tipo in tiposDocumento"
                                     :key="tipo.id"
-                                    :value="tipo.nombre"
+                                    :value="tipo.id"
                                 >
                                     {{ tipo.nombre }}
                                 </option>
@@ -94,7 +94,7 @@
                                             {{ documento.nombre }}
                                         </h3>
                                         <p class="text-sm text-gray-600">
-                                            Tipo: {{ documento.tipo }}
+                                            Tipo: {{ documento.tipo_documento?.nombre || 'Sin tipo' }}
                                         </p>
                                     </div>
                                 </div>
@@ -441,7 +441,7 @@ export default {
             searchForm: {
                 search: this.filters.search || "",
                 estado: this.filters.estado || "",
-                tipo: this.filters.tipo || "",
+                tipo_documento_id: this.filters.tipo_documento_id || "",
                 vencidos: this.filters.vencidos || "",
             },
         };

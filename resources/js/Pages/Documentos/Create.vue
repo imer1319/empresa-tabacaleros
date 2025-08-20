@@ -67,27 +67,27 @@
 
                             <!-- Tipo de documento -->
                             <div>
-                                <label for="tipo" class="block text-sm font-medium text-gray-700 mb-2">
+                                <label for="tipo_documento_id" class="block text-sm font-medium text-gray-700 mb-2">
                                     Tipo de Documento *
                                 </label>
                                 <select
-                                    id="tipo"
-                                    v-model="form.tipo"
+                                    id="tipo_documento_id"
+                                    v-model="form.tipo_documento_id"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                    :class="{ 'border-red-500': form.errors.tipo }"
+                                    :class="{ 'border-red-500': form.errors.tipo_documento_id }"
                                     required
                                 >
                                     <option value="" disabled>Seleccione un tipo</option>
                                     <option
                                         v-for="tipoDoc in tiposDocumento"
                                         :key="tipoDoc.id"
-                                        :value="tipoDoc.nombre"
+                                        :value="tipoDoc.id"
                                     >
                                         {{ tipoDoc.nombre }}
                                     </option>
                                 </select>
-                                <div v-if="form.errors.tipo" class="mt-1 text-sm text-red-600">
-                                    {{ form.errors.tipo }}
+                                <div v-if="form.errors.tipo_documento_id" class="mt-1 text-sm text-red-600">
+                                    {{ form.errors.tipo_documento_id }}
                                 </div>
                             </div>
                         </div>
@@ -281,7 +281,7 @@ export default {
             form: useForm({
                 productor_id: this.productor?.id || "",
                 nombre: "",
-                tipo: "",
+                tipo_documento_id: "",
                 archivo: null,
                 observaciones: "",
                 es_requerido: false,

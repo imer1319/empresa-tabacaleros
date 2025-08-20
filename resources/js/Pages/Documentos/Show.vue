@@ -35,7 +35,7 @@
                             </div>
                             <div>
                                 <h1 class="text-2xl font-bold text-gray-900">{{ documento.nombre }}</h1>
-                                <p class="text-gray-600">Tipo: {{ documento.tipo }}</p>
+                                <p class="text-gray-600">Tipo: {{ documento.tipo_documento?.nombre || 'Sin tipo' }}</p>
                             </div>
                         </div>
                         <div class="flex items-center space-x-3">

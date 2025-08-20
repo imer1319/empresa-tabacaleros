@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('productor_id')->constrained('productors')->onDelete('cascade');
             $table->string('nombre'); // Nombre del documento (ej. "Contrato de siembra")
-            $table->string('tipo'); // Tipo de documento (referencia a TipoDocumento)
+            $table->foreignId('tipo_documento_id')->constrained('tipo_documentos')->onDelete('cascade');
             $table->enum('estado', ['pendiente', 'entregado', 'aprobado', 'rechazado', 'vencido'])->default('pendiente');
             $table->string('archivo_path')->nullable(); // Ruta del archivo subido
             $table->string('archivo_nombre')->nullable(); // Nombre original del archivo
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->unsignedBigInteger('revisado_por')->nullable(); // ID del usuario que revisó
             $table->timestamps();
 
-            $table->index(['productor_id', 'tipo']);
+            $table->index(['productor_id', 'tipo_documento_id']);
             $table->index(['estado']);
             $table->index(['fecha_vencimiento']);
         });

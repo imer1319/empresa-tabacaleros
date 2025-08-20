@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Productor;
+use App\Models\TipoDocumento;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -74,8 +75,11 @@ class ProductorController extends Controller
      */
     public function show(Productor $productore)
     {
+        $tiposDocumento = TipoDocumento::activos()->ordenados()->get();
+        
         return Inertia::render('Productores/Show', [
-            'productor' => $productore->load(['documentos'])
+            'productor' => $productore->load(['documentos.tipoDocumento']),
+            'tiposDocumento' => $tiposDocumento
         ]);
     }
 

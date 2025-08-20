@@ -237,7 +237,7 @@ class ImportacionController extends Controller
                         Documento::create([
                             'productor_id' => $productor->id,
                             'nombre' => 'INTIMACION ANSES',
-                            'tipo' => 'intimacion anses',
+                            'tipo_documento_id' => 19, // Intimación ANSES
                             'estado' => 'entregado',
                             'archivo_path' => $rutaDestino,
                             'archivo_nombre' => $nombreArchivo,

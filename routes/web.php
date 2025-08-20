@@ -35,7 +35,9 @@ Route::middleware('auth')->group(function () {
     Route::get('documentos/{documento}/download', [DocumentoController::class, 'download'])->name('documentos.download');
 
     // Rutas para Tipos de Documento
-    Route::resource('tipos-documento', TipoDocumentoController::class);
+    Route::resource('tipos-documento', TipoDocumentoController::class)->parameters([
+        'tipos-documento' => 'tipoDocumento'
+    ]);
 
     // Rutas para Importación
     Route::get('/importacion', [ImportacionController::class, 'index'])->name('importacion.index');

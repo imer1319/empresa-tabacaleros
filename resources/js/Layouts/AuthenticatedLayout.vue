@@ -115,9 +115,14 @@ const sidebarOpen = ref(false);
                                 </svg>
                                 Documentos
                             </Link>
-                            <a
-                                href="#"
-                                class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-l-md transition-colors duration-200"
+                            <Link
+                                :href="route('tipos-documento.index')"
+                                :class="[
+                                    route().current('tipos-documento.*')
+                                        ? 'bg-blue-50 border-r-4 border-blue-500 text-blue-700'
+                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                                    'group flex items-center px-2 py-2 text-sm font-medium rounded-l-md transition-colors duration-200',
+                                ]"
                             >
                                 <svg
                                     class="mr-3 h-5 w-5"
@@ -139,7 +144,7 @@ const sidebarOpen = ref(false);
                                     />
                                 </svg>
                                 Tipos de Documentos
-                            </a>
+                            </Link>
                         </div>
                     </div>
 

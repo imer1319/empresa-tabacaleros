@@ -797,26 +797,34 @@
                                     <!-- Tipo de Documento -->
                                     <div>
                                         <label
-                                            for="tipo"
+                                            for="tipo_documento_id"
                                             class="block text-sm font-medium text-gray-700 mb-2"
                                         >
                                             Tipo de Documento
                                         </label>
-                                        <input
-                                            id="tipo"
-                                            v-model="documentForm.tipo"
-                                            type="text"
+                                        <select
+                                            id="tipo_documento_id"
+                                            v-model="documentForm.tipo_documento_id"
                                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                             :class="{
                                                 'border-red-500 focus:ring-red-500 focus:border-red-500':
-                                                    documentForm.errors.tipo,
+                                                    documentForm.errors.tipo_documento_id,
                                             }"
-                                        />
+                                        >
+                                            <option value="" disabled>Seleccione un tipo</option>
+                                            <option
+                                                v-for="tipoDoc in tiposDocumento"
+                                                :key="tipoDoc.id"
+                                                :value="tipoDoc.id"
+                                            >
+                                                {{ tipoDoc.nombre }}
+                                            </option>
+                                        </select>
                                         <div
-                                            v-if="documentForm.errors.tipo"
+                                            v-if="documentForm.errors.tipo_documento_id"
                                             class="mt-2 text-sm text-red-600"
                                         >
-                                            {{ documentForm.errors.tipo }}
+                                            {{ documentForm.errors.tipo_documento_id }}
                                         </div>
                                     </div>
                                 </div>
@@ -1291,7 +1299,7 @@ const historial = ref([
 const documentForm = useForm({
     productor_id: props.productor.id,
     nombre: "",
-    tipo: "",
+    tipo_documento_id: "",
     archivo: null,
     observaciones: "",
     es_requerido: false,

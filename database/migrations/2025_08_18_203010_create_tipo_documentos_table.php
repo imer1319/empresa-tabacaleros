@@ -15,10 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('nombre'); // Nombre del tipo de documento (ej. "Contrato de siembra")
             $table->text('descripcion')->nullable(); // Descripción del documento
-            $table->boolean('es_obligatorio')->default(true); // Si es obligatorio para todos los productores
-            $table->json('formatos_permitidos')->nullable(); // Formatos de archivo permitidos (PDF, JPG, etc.)
-            $table->integer('tamaño_maximo')->nullable(); // Tamaño máximo en KB
-            $table->text('instrucciones')->nullable(); // Instrucciones para el productor
             $table->boolean('activo')->default(true); // Si está activo o no
             $table->integer('orden')->default(0); // Orden de visualización
             $table->timestamps();
