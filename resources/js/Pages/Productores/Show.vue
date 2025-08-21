@@ -459,13 +459,11 @@
 </template>
 
 <script setup>
-import DocumentoModal from "@/Components/DocumentoModal.vue";
-import DocumentShow from "@/Pages/Productores/DocumentShow.vue";
 import Documento from "@/Pages/Productores/Documento.vue";
 import Citas from "@/Pages/Productores/Citas.vue";
 import Historial from "@/Pages/Productores/Historial.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Link, useForm, router } from "@inertiajs/vue3";
+import { Link } from "@inertiajs/vue3";
 import { ref } from "vue";
 
 const props = defineProps({
@@ -474,214 +472,14 @@ const props = defineProps({
 });
 
 // Variables reactivas para el modal de documentos
-const showDocumentoModal = ref(false);
 const selectedDocumento = ref(null);
-const modalMode = ref("create"); // Modos: 'create', 'edit', 'view'
 
-// Métodos para manejar el modal de documentos
-const openDocumentoModal = (documento = null) => {
-    selectedDocumento.value = documento;
-    modalMode.value = documento ? "edit" : "create";
-    showDocumentoModal.value = true;
-    documentForm.reset();
-
-    if (documento) {
-        documentForm.nombre = documento.nombre;
-        documentForm.tipo_documento_id = documento.tipo_documento_id;
-        documentForm.observaciones = documento.observaciones;
-        documentForm.estado = documento.estado;
-        documentForm.fecha_entrega = documento.fecha_entrega;
-        documentForm.fecha_vencimiento = documento.fecha_vencimiento;
-    }
-};
-
-const openViewModal = (documento) => {
-    selectedDocumento.value = documento;
-    modalMode.value = "view";
-    showDocumentoModal.value = true;
-};
-
-const closeDocumentoModal = () => {
-    showDocumentoModal.value = false;
-    selectedDocumento.value = null;
-};
-
-const refreshPage = () => {
-    router.reload();
-};
 const showCommunicationModal = ref(false);
 const activeTab = ref("documentos");
-const selectedFile = ref(null);
-
-const documentForm = useForm({
-    productor_id: props.productor.id,
-    nombre: "",
-    tipo_documento_id: "",
-    archivo: null,
-    observaciones: "",
-    es_requerido: false,
-    estado: "pendiente",
-    fecha_entrega: "",
-    fecha_revision: "",
-    fecha_vencimiento: "",
-});
-
-const communicationForm = useForm({
-    productor_id: props.productor.id,
-    tipo: "",
-    asunto: "",
-    mensaje: "",
-});
-
-const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        // Validar tamaño del archivo (10MB máximo)
-        if (file.size > 10 * 1024 * 1024) {
-            alert(
-                "El archivo es demasiado grande. El tamaño máximo permitido es 10MB."
-            );
-            event.target.value = "";
-            return;
-        }
-
-        // Validar tipo de archivo
-        const allowedTypes = [
-            "application/pdf",
-            "image/jpeg",
-            "image/jpg",
-            "image/png",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        ];
-        if (!allowedTypes.includes(file.type)) {
-            alert(
-                "Tipo de archivo no permitido. Solo se permiten archivos PDF, JPG, PNG, DOC y DOCX."
-            );
-            event.target.value = "";
-            return;
-        }
-
-        selectedFile.value = file;
-        documentForm.archivo = file;
-    }
-};
-
-const removeFile = () => {
-    selectedFile.value = null;
-    documentForm.archivo = null;
-    // Reset file input if it exists
-    const fileInput = document.querySelector('input[type="file"]');
-    if (fileInput) {
-        fileInput.value = "";
-    }
-};
-
-const formatFileSize = (bytes) => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-};
-
-const submitDocument = () => {
-    documentForm.post(route("documentos.store"), {
-        onSuccess: () => {
-            closeDocumentoModal();
-            // Recargar la página para mostrar el nuevo documento
-            router.reload();
-        },
-        onError: (errors) => {
-            console.log("Errores:", errors);
-        },
-    });
-    selectedFile.value = null;
-    documentForm.reset();
-    documentForm.clearErrors();
-};
 
 const downloadDocument = (documento) => {
     if (!documento || !documento.id) return;
     window.location.href = route("documentos.download", documento.id);
-};
-
-const deleteDocument = (documentoId) => {
-    if (confirm("¿Estás seguro de que deseas eliminar este documento?")) {
-        router.delete(route("documentos.destroy", documentoId), {
-            onSuccess: () => {
-                router.reload();
-            },
-        });
-    }
-};
-
-const getEstadoClass = (estado) => {
-    switch (estado) {
-        case "Aprobado":
-            return "bg-green-100 text-green-800";
-        case "En proceso":
-            return "bg-yellow-100 text-yellow-800";
-        case "Faltante":
-            return "bg-red-100 text-red-800";
-        default:
-            return "bg-gray-100 text-gray-800";
-    }
-};
-
-const getDocumentoEstadoClass = (estado) => {
-    switch (estado) {
-        case "entregado":
-        case "aprobado":
-            return "bg-green-100 text-green-800";
-        case "pendiente":
-            return "bg-yellow-100 text-yellow-800";
-        case "rechazado":
-        case "vencido":
-            return "bg-red-100 text-red-800";
-        default:
-            return "bg-gray-100 text-gray-800";
-    }
-};
-
-const getComunicacionEstadoClass = (estado) => {
-    switch (estado) {
-        case "Enviado":
-            return "bg-green-100 text-green-800";
-        case "Pendiente":
-            return "bg-yellow-100 text-yellow-800";
-        case "Error":
-            return "bg-red-100 text-red-800";
-        default:
-            return "bg-gray-100 text-gray-800";
-    }
-};
-
-const getHistorialIconClass = (tipo) => {
-    switch (tipo) {
-        case "documento":
-            return "bg-blue-500";
-        case "comunicacion":
-            return "bg-green-500";
-        case "actualizacion":
-            return "bg-yellow-500";
-        default:
-            return "bg-gray-500";
-    }
-};
-
-const submitCommunication = () => {
-    communicationForm.post(route("comunicaciones.store"), {
-        onSuccess: () => {
-            showCommunicationModal.value = false;
-            communicationForm.reset();
-            // Recargar la página para mostrar la nueva comunicación
-            router.reload();
-        },
-        onError: (errors) => {
-            console.log("Errores:", errors);
-        },
-    });
 };
 
 const formatDate = (dateString) => {

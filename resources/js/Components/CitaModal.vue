@@ -121,7 +121,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["close", "saved"]);
 
 const isEditing = computed(() => props.cita !== null);
 
@@ -169,12 +169,18 @@ const submitForm = () => {
     if (isEditing.value) {
         form.put(route("citas.update", props.cita.id), {
             preserveScroll: true,
-            onSuccess: () => closeModal(),
+            onSuccess: () => {
+                emit("saved");
+                closeModal();
+            },
         });
     } else {
         form.post(route("citas.store"), {
             preserveScroll: true,
-            onSuccess: () => closeModal(),
+            onSuccess: () => {
+                emit("saved");
+                closeModal();
+            },
         });
     }
 };
