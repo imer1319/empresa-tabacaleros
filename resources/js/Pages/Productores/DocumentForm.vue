@@ -121,20 +121,30 @@
                 </label>
 
                 <!-- Mostrar archivo existente en modo edición -->
-                <div v-if="mode === 'edit' && documento?.archivo_url" class="mt-4 p-4 bg-blue-50 rounded-lg flex items-center justify-between">
+                <div v-if="mode === 'edit' && documento?.archivo_nombre" class="mt-4 p-4 bg-blue-50 rounded-lg flex items-center justify-between mb-4">
                     <div class="flex items-center space-x-3">
                         <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                         <div>
-                            <p class="text-sm font-medium text-gray-900">Documento actual</p>
-                            <a :href="documento.archivo_url" target="_blank" class="text-sm text-blue-600 hover:text-blue-800">Descargar archivo</a>
+                            <p class="text-sm font-medium text-gray-900">{{ documento.archivo_nombre }}</p>
+                            <p class="text-xs text-gray-500">Documento actual</p>
                         </div>
                     </div>
+                    <button
+                        type="button"
+                        @click="downloadDocument(documento)"
+                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                        <svg class="-ml-0.5 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Descargar
+                    </button>
                 </div>
 
-                <!-- Área de carga de archivo solo visible en modo crear o si no hay archivo en modo edición -->
-                <div v-if="mode === 'create' || !documento?.archivo_url"
+                <!-- Área de carga de archivo -->
+                <div
                     class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-blue-400 transition-colors duration-150 ease-in-out"
                 >
                     <div class="space-y-1 text-center">
@@ -671,6 +681,11 @@ const handleFileChange = (event) => {
         selectedFile.value = file;
         form.archivo = file;
     }
+};
+
+const downloadDocument = (documento) => {
+    if (!documento || !documento.id) return;
+    window.location.href = route("documentos.download", documento.id);
 };
 
 const removeFile = () => {

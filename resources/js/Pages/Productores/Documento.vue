@@ -172,12 +172,6 @@
                             }}
                         </p>
                     </div>
-                    <div>
-                        <p class="text-sm text-gray-600 mb-1">Archivo:</p>
-                        <p class="text-sm font-medium text-gray-900">
-                            {{ documento.archivo_nombre }}
-                        </p>
-                    </div>
                 </div>
 
                 <!-- Observaciones -->
@@ -432,6 +426,14 @@ const modalMode = ref("create"); // Modos: 'create', 'edit', 'view'
 
 // Métodos para manejar el modal de documentos
 const openDocumentoModal = (documento = null) => {
+    if (documento) {
+        documento.fecha_entrega = documento.fecha_entrega
+            ? new Date(documento.fecha_entrega).toISOString().split("T")[0]
+            : "";
+        documento.fecha_vencimiento = documento.fecha_vencimiento
+            ? new Date(documento.fecha_vencimiento).toISOString().split("T")[0]
+            : "";
+    }
     selectedDocumento.value = documento;
     modalMode.value = documento ? "edit" : "create";
     showDocumentoModal.value = true;

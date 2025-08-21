@@ -1,5 +1,8 @@
 <template>
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+    <div v-if="!documento" class="p-4 text-center text-gray-500">
+        No se encontró información del documento.
+    </div>
+    <div v-else class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex items-center justify-between mb-6">
             <div class="flex items-center space-x-4">
                 <div
@@ -189,7 +192,7 @@ import { defineProps } from "vue";
 const props = defineProps({
     documento: {
         type: Object,
-        required: true,
+        default: null,
     },
 });
 
