@@ -12,22 +12,6 @@
             </h2>
 
             <form @submit.prevent="submitForm" class="space-y-6">
-                <!-- Productor -->
-                <div>
-                    <InputLabel for="productor" value="Productor" />
-                    <select
-                        id="productor"
-                        v-model="form.productor_id"
-                        class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                        required
-                        disabled
-                    >
-                        <option :value="productorId">
-                            40 - MAZZONE, JULIO CESAR
-                        </option>
-                    </select>
-                </div>
-
                 <!-- Información básica del documento -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -211,7 +195,11 @@
                                     for="archivo"
                                     class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
                                 >
-                                    <span>{{ isEditing ? 'Reemplazar archivo' : 'Subir archivo' }}</span>
+                                    <span>{{
+                                        isEditing
+                                            ? "Reemplazar archivo"
+                                            : "Subir archivo"
+                                    }}</span>
                                     <input
                                         type="file"
                                         id="archivo"
@@ -345,7 +333,7 @@ const form = useForm({
     archivo: null,
     observaciones: props.documento?.observaciones || "",
     estado: props.documento?.estado || "pendiente",
-    fecha_entrega: props.documento?.fecha_entrega || null,
+    fecha_entrega: new Date().toISOString().split("T")[0] || null,
     fecha_vencimiento: props.documento?.fecha_vencimiento || null,
 });
 
@@ -404,15 +392,15 @@ const submitForm = () => {
         // Si estamos editando y hay un nuevo archivo, usamos FormData
         if (form.archivo) {
             const formData = new FormData();
-            formData.append('_method', 'PUT');
-            formData.append('archivo', form.archivo);
-            formData.append('nombre', form.nombre);
-            formData.append('tipo_documento_id', form.tipo_documento_id);
-            formData.append('observaciones', form.observaciones);
-            formData.append('estado', form.estado);
-            formData.append('fecha_entrega', form.fecha_entrega);
-            formData.append('fecha_vencimiento', form.fecha_vencimiento);
-            formData.append('es_requerido', form.es_requerido);
+            formData.append("_method", "PUT");
+            formData.append("archivo", form.archivo);
+            formData.append("nombre", form.nombre);
+            formData.append("tipo_documento_id", form.tipo_documento_id);
+            formData.append("observaciones", form.observaciones);
+            formData.append("estado", form.estado);
+            formData.append("fecha_entrega", form.fecha_entrega);
+            formData.append("fecha_vencimiento", form.fecha_vencimiento);
+            formData.append("es_requerido", form.es_requerido);
 
             form.post(route("documentos.update", props.documento.id), {
                 onSuccess: () => {

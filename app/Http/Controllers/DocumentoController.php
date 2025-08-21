@@ -103,9 +103,11 @@ class DocumentoController extends Controller
             $archivo = $request->file('archivo');
             $extension = $archivo->getClientOriginalExtension();
 
-            // Crear nombre del archivo: nombre_documento_extension
-            $nombreDocumento = str_replace(' ', '_', $request->nombre);
-            $nombreArchivo = $nombreDocumento . '.' . $extension;
+            // Crear nombre único del archivo usando timestamp y hash
+            $timestamp = time();
+            $hash = substr(md5(uniqid()), 0, 8);
+            $nombreBase = str_replace(' ', '_', $request->nombre);
+            $nombreArchivo = $timestamp . '_' . $hash . '_' . $nombreBase . '.' . $extension;
 
             $rutaArchivo = $archivo->storeAs('documentos', $nombreArchivo, 'public');
 
@@ -202,9 +204,11 @@ class DocumentoController extends Controller
             $archivo = $request->file('archivo');
             $extension = $archivo->getClientOriginalExtension();
 
-            // Crear nombre del archivo: nombre_documento_extension
-            $nombreDocumento = str_replace(' ', '_', $request->nombre);
-            $nombreArchivo = $nombreDocumento . '.' . $extension;
+            // Crear nombre único del archivo usando timestamp y hash
+            $timestamp = time();
+            $hash = substr(md5(uniqid()), 0, 8);
+            $nombreBase = str_replace(' ', '_', $request->nombre);
+            $nombreArchivo = $timestamp . '_' . $hash . '_' . $nombreBase . '.' . $extension;
 
             $rutaArchivo = $archivo->storeAs('documentos', $nombreArchivo, 'public');
 
