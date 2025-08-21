@@ -884,6 +884,12 @@
             @close="closeDocumentoModal"
             @submitted="refreshPage"
         />
+
+        <!-- Vista de documento individual -->
+        <DocumentShow
+            v-if="selectedDocumento && modalMode === 'view'"
+            :documento="selectedDocumento"
+        />
         <div
             v-if="selectedDocumento"
             class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6"
@@ -1213,6 +1219,7 @@
 
 <script setup>
 import DocumentoModal from "@/Components/DocumentoModal.vue";
+import DocumentShow from "@/Pages/Productores/DocumentShow.vue";
 import CitaModal from "@/Components/CitaModal.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Link, useForm, router } from "@inertiajs/vue3";
@@ -1532,7 +1539,7 @@ const formatDate = (dateString) => {
         year: "numeric",
         month: "long",
         day: "numeric",
-        timeZone: 'America/Argentina/Buenos_Aires'
+        timeZone: "America/Argentina/Buenos_Aires",
     });
 };
 
@@ -1543,7 +1550,7 @@ const formatDateOnly = (dateString) => {
         year: "numeric",
         month: "long",
         day: "numeric",
-        timeZone: 'America/Argentina/Buenos_Aires'
+        timeZone: "America/Argentina/Buenos_Aires",
     });
 };
 </script>
