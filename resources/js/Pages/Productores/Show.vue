@@ -231,247 +231,16 @@
                 <!-- Contenido de las Pestañas -->
                 <div class="p-6">
                     <!-- Pestaña Documentos -->
+                    <!-- Pestaña Documentos -->
                     <div v-if="activeTab === 'documentos'">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-medium text-gray-900">
-                                Documentos del Productor
-                            </h3>
-                            <button
-                                @click="openDocumentoModal()"
-                                class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150"
-                            >
-                                <svg
-                                    class="w-4 h-4 mr-2"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                                    ></path>
-                                </svg>
-                                Subir Documento
-                            </button>
-                        </div>
-
-                        <div
-                            v-if="
-                                productor.documentos &&
-                                productor.documentos.length > 0
+                        <Documento
+                            :productor="productor"
+                            :tipos-documento="tiposDocumento"
+                            :documentos="productor.documentos"
+                            @openCommunicationModal="
+                                showCommunicationModal = true
                             "
-                            class="space-y-4"
-                        >
-                            <div
-                                v-for="documento in productor.documentos"
-                                :key="documento.id"
-                                class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-                            >
-                                <!-- Título del documento -->
-                                <div
-                                    class="flex items-center justify-between mb-4"
-                                >
-                                    <div
-                                        class="flex items-center justify-between space-x-3"
-                                    >
-                                        <h3
-                                            class="text-lg font-medium text-gray-900"
-                                        >
-                                            {{ documento.nombre }}
-                                        </h3>
-                                        <!-- Estado -->
-                                        <div
-                                            class="flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium text-green-600 bg-green-100"
-                                        >
-                                            <svg
-                                                class="w-5 h-5 text-green-500 mr-2"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                ></path>
-                                            </svg>
-                                            <span
-                                                class="text-green-600 font-medium"
-                                            >
-                                                {{
-                                                    documento.estado ||
-                                                    "Entregado"
-                                                }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <!-- Acciones -->
-                                    <div class="flex justify-end space-x-3">
-                                        <button
-                                            @click="openViewModal(documento)"
-                                            class="inline-flex items-center justify-center p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-lg transition-colors"
-                                            title="Ver documento"
-                                        >
-                                            <svg
-                                                class="w-5 h-5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                                viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                version="1.1"
-                                            >
-                                                <path
-                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                ></path>
-                                                <path
-                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                ></path>
-                                            </svg>
-                                        </button>
-                                        <a
-                                            :href="
-                                                route(
-                                                    'documentos.download',
-                                                    documento.id
-                                                )
-                                            "
-                                            class="inline-flex items-center justify-center p-2 text-green-600 hover:text-green-700 hover:bg-green-100 rounded-lg transition-colors"
-                                            title="Descargar documento"
-                                            target="_blank"
-                                        >
-                                            <svg
-                                                class="w-5 h-5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                                viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                ></path>
-                                            </svg>
-                                        </a>
-                                        <button
-                                            @click="
-                                                openDocumentoModal(documento)
-                                            "
-                                            class="inline-flex items-center justify-center p-2 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-100 rounded-lg transition-colors"
-                                            title="Editar documento"
-                                        >
-                                            <svg
-                                                class="w-5 h-5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                                viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                ></path>
-                                            </svg>
-                                        </button>
-                                        <button
-                                            @click="
-                                                deleteDocument(documento.id)
-                                            "
-                                            class="inline-flex items-center justify-center p-2 text-red-600 hover:text-red-700 hover:bg-red-100 rounded-lg transition-colors"
-                                            title="Eliminar documento"
-                                        >
-                                            <svg
-                                                class="w-5 h-5"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2"
-                                                viewBox="0 0 24 24"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                ></path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                                <!-- Información del documento -->
-                                <div
-                                    class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"
-                                >
-                                    <div>
-                                        <p class="text-sm text-gray-600 mb-1">
-                                            Fecha de entrega:
-                                        </p>
-                                        <p
-                                            class="text-sm font-medium text-gray-900"
-                                        >
-                                            {{
-                                                formatDateOnly(
-                                                    documento.fecha_entrega
-                                                ) ||
-                                                formatDate(documento.created_at)
-                                            }}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600 mb-1">
-                                            Vence:
-                                        </p>
-                                        <p
-                                            class="text-sm font-medium text-gray-900"
-                                        >
-                                            {{
-                                                formatDateOnly(
-                                                    documento.fecha_vencimiento
-                                                ) || "No especificada"
-                                            }}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-600 mb-1">
-                                            Archivo:
-                                        </p>
-                                        <p
-                                            class="text-sm font-medium text-gray-900"
-                                        >
-                                            {{ documento.archivo_nombre }}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Observaciones -->
-                                <div
-                                    class="mb-4 bg-gray-50 py-4 rounded-lg px-4"
-                                >
-                                    <p class="text-sm text-gray-600 mb-1">
-                                        <strong>Observaciones:</strong>
-                                        {{
-                                            documento.observaciones ||
-                                            "Documento aprobado sin observaciones"
-                                        }}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else class="text-center py-8">
-                            <p class="text-gray-500">
-                                No hay documentos cargados para este productor.
-                            </p>
-                        </div>
+                        />
                     </div>
 
                     <!-- Pestaña Citas -->
@@ -487,22 +256,6 @@
             </div>
         </div>
 
-        <!-- Modal para Documentos -->
-        <DocumentoModal
-            :show="showDocumentoModal"
-            :tipos-documento="tiposDocumento"
-            :productor-id="productor.id"
-            :documento="selectedDocumento"
-            :mode="modalMode"
-            @close="closeDocumentoModal"
-            @submitted="refreshPage"
-        />
-
-        <!-- Vista de documento individual -->
-        <DocumentShow
-            v-if="selectedDocumento && modalMode === 'view'"
-            :documento="selectedDocumento"
-        />
         <div
             v-if="selectedDocumento"
             class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6"
@@ -702,137 +455,18 @@
                 </div>
             </div>
         </div>
-
-        <!-- Modal para Nueva Comunicación -->
-        <div
-            v-if="showCommunicationModal"
-            class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-        >
-            <div
-                class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
-            >
-                <div class="mt-3">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">
-                            Nueva Comunicación
-                        </h3>
-                        <button
-                            @click="showCommunicationModal = false"
-                            class="text-gray-400 hover:text-gray-600"
-                        >
-                            <svg
-                                class="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                                version="1.1"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12"
-                                />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <form
-                        @submit.prevent="submitCommunication"
-                        class="space-y-4"
-                    >
-                        <!-- Tipo de Comunicación -->
-                        <div>
-                            <label
-                                for="tipo_comunicacion"
-                                class="block text-sm font-medium text-gray-700"
-                            >
-                                Tipo de Comunicación *
-                            </label>
-                            <select
-                                id="tipo_comunicacion"
-                                v-model="communicationForm.tipo"
-                                required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            >
-                                <option value="">Seleccionar tipo</option>
-                                <option value="Email">Email</option>
-                                <option value="SMS">SMS</option>
-                                <option value="Llamada">
-                                    Llamada Telefónica
-                                </option>
-                                <option value="WhatsApp">WhatsApp</option>
-                                <option value="Carta">Carta</option>
-                            </select>
-                        </div>
-
-                        <!-- Asunto -->
-                        <div>
-                            <label
-                                for="asunto"
-                                class="block text-sm font-medium text-gray-700"
-                            >
-                                Asunto *
-                            </label>
-                            <input
-                                id="asunto"
-                                v-model="communicationForm.asunto"
-                                type="text"
-                                required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            />
-                        </div>
-
-                        <!-- Mensaje -->
-                        <div>
-                            <label
-                                for="mensaje"
-                                class="block text-sm font-medium text-gray-700"
-                            >
-                                Mensaje *
-                            </label>
-                            <textarea
-                                id="mensaje"
-                                v-model="communicationForm.mensaje"
-                                rows="4"
-                                required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            ></textarea>
-                        </div>
-
-                        <!-- Botones -->
-                        <div class="flex justify-end space-x-3 pt-4">
-                            <button
-                                type="button"
-                                @click="showCommunicationModal = false"
-                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                type="submit"
-                                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                                Enviar Comunicación
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
     </AuthenticatedLayout>
 </template>
 
 <script setup>
 import DocumentoModal from "@/Components/DocumentoModal.vue";
 import DocumentShow from "@/Pages/Productores/DocumentShow.vue";
+import Documento from "@/Pages/Productores/Documento.vue";
 import Citas from "@/Pages/Productores/Citas.vue";
 import Historial from "@/Pages/Productores/Historial.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Link, useForm, router } from "@inertiajs/vue3";
-import { ref, computed } from "vue";
+import { ref } from "vue";
 
 const props = defineProps({
     productor: Object,
@@ -872,39 +506,12 @@ const closeDocumentoModal = () => {
     selectedDocumento.value = null;
 };
 
-
-
 const refreshPage = () => {
     router.reload();
 };
 const showCommunicationModal = ref(false);
 const activeTab = ref("documentos");
 const selectedFile = ref(null);
-
-
-// Datos de ejemplo para comunicaciones
-const comunicaciones = ref([
-    {
-        id: 1,
-        asunto: "Documentación pendiente",
-        tipo: "Email",
-        estado: "Enviado",
-        mensaje:
-            "Se requiere la presentación del certificado AFIP actualizado para completar el expediente.",
-        usuario: "Admin Sistema",
-        created_at: "2024-01-15T10:30:00Z",
-    },
-    {
-        id: 2,
-        asunto: "Recordatorio vencimiento",
-        tipo: "SMS",
-        estado: "Pendiente",
-        mensaje:
-            "Su contrato de siembra vence el 30/12/2024. Favor contactar para renovación.",
-        usuario: "Sistema Automático",
-        created_at: "2024-01-10T14:20:00Z",
-    },
-]);
 
 const documentForm = useForm({
     productor_id: props.productor.id,
@@ -1062,8 +669,6 @@ const getHistorialIconClass = (tipo) => {
             return "bg-gray-500";
     }
 };
-
-
 
 const submitCommunication = () => {
     communicationForm.post(route("comunicaciones.store"), {
