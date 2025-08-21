@@ -5,6 +5,7 @@ use App\Http\Controllers\ProductorController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\TipoDocumentoController;
 use App\Http\Controllers\ImportacionController;
+use App\Http\Controllers\CitaController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -49,6 +50,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/importacion/generar-pdf-consolidado', [ImportacionController::class, 'generarPdfConsolidado'])->name('importacion.generar-pdf-consolidado');
     Route::post('/importacion/generar-pdf-individual', [ImportacionController::class, 'generarPdfIndividual'])->name('importacion.generar-pdf-individual');
     Route::post('/importacion/enviar-email-pdf', [ImportacionController::class, 'enviarEmailPdf'])->name('importacion.enviar-email-pdf');
+
+    // Rutas para Citas
+    Route::post('/citas', [CitaController::class, 'store'])->name('citas.store');
+    Route::put('/citas/{cita}', [CitaController::class, 'update'])->name('citas.update');
+    Route::delete('/citas/{cita}', [CitaController::class, 'destroy'])->name('citas.destroy');
 });
 
 require __DIR__ . '/auth.php';

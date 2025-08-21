@@ -345,8 +345,8 @@ const form = useForm({
     archivo: null,
     observaciones: props.documento?.observaciones || "",
     estado: props.documento?.estado || "pendiente",
-    fecha_entrega: props.documento?.fecha_entrega || "",
-    fecha_vencimiento: props.documento?.fecha_vencimiento || "",
+    fecha_entrega: props.documento?.fecha_entrega || null,
+    fecha_vencimiento: props.documento?.fecha_vencimiento || null,
 });
 
 // Watcher para actualizar el formulario cuando cambia el documento
@@ -358,8 +358,8 @@ watch(
             form.tipo_documento_id = newDoc.tipo_documento_id || "";
             form.observaciones = newDoc.observaciones || "";
             form.estado = newDoc.estado || "pendiente";
-            form.fecha_entrega = newDoc.fecha_entrega || "";
-            form.fecha_vencimiento = newDoc.fecha_vencimiento || "";
+            form.fecha_entrega = newDoc.fecha_entrega || null;
+            form.fecha_vencimiento = newDoc.fecha_vencimiento || null;
         } else {
             form.reset();
         }

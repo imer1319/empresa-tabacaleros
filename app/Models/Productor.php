@@ -28,15 +28,17 @@ class Productor extends Model
         return $this->hasMany(Documento::class)->orderBy('created_at', 'desc');
     }
 
-    // // Relación con comunicaciones
-    // public function comunicaciones()
-    // {
-    //     return $this->hasMany(Comunicacion::class);
-    // }
-
     // Relación con historial
     public function historial()
     {
         return $this->hasMany(HistorialProductor::class)->orderBy('created_at', 'desc');
+    }
+
+    // Relación con citas
+    public function citas()
+    {
+        return $this->hasMany(Cita::class)
+            ->orderBy('fecha_visita', 'desc')
+            ->orderBy('id', 'asc');
     }
 }

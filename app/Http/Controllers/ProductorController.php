@@ -89,12 +89,17 @@ class ProductorController extends Controller
             'documentos.tipoDocumento',
             'historial' => function ($query) {
                 $query->with('usuario')->latest();
+            },
+            'citas' => function ($query) {
+                $query->with('productor')->latest();
             }
         ]);
 
         return Inertia::render('Productores/Show', [
             'productor' => $productore,
             'tiposDocumento' => $tiposDocumento,
+            'citas' => $productore->citas,
+
         ]);
     }
 

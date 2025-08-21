@@ -178,9 +178,9 @@
                             Documentos
                         </button>
                         <button
-                            @click="activeTab = 'comunicaciones'"
+                            @click="activeTab = 'citas'"
                             :class="[
-                                activeTab === 'comunicaciones'
+                                activeTab === 'citas'
                                     ? 'border-green-500 text-green-600'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
                                 'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center',
@@ -196,10 +196,10 @@
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     stroke-width="2"
-                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                                 ></path>
                             </svg>
-                            Comunicaciones
+                            Citas
                         </button>
                         <button
                             @click="activeTab = 'historial'"
@@ -322,6 +322,7 @@
                                                 stroke-width="2"
                                                 viewBox="0 0 24 24"
                                                 xmlns="http://www.w3.org/2000/svg"
+                                                version="1.1"
                                             >
                                                 <path
                                                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
@@ -473,14 +474,14 @@
                         </div>
                     </div>
 
-                    <!-- Pestaña Comunicaciones -->
-                    <div v-if="activeTab === 'comunicaciones'">
+                    <!-- Pestaña Citas -->
+                    <div v-if="activeTab === 'citas'">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-medium text-gray-900">
-                                Comunicaciones
+                                Citas y Visitas
                             </h3>
                             <button
-                                @click="showCommunicationModal = true"
+                                @click="showCitaModal = true"
                                 class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150"
                             >
                                 <svg
@@ -496,116 +497,162 @@
                                         d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                                     ></path>
                                 </svg>
-                                Nueva Comunicación
+                                Nueva Cita
                             </button>
                         </div>
 
+                        <!-- Filtro de estado -->
+                        <div class="mb-4">
+                            <select
+                                v-model="filtroEstado"
+                                class="mt-1 block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                            >
+                                <option value="">Todos los estados</option>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="asistio">Asistió</option>
+                                <option value="no_asistio">No Asistió</option>
+                            </select>
+                        </div>
+
+                        <!-- Grid de cards -->
                         <div
-                            v-if="comunicaciones && comunicaciones.length > 0"
-                            class="space-y-4"
+                            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
                         >
                             <div
-                                v-for="comunicacion in comunicaciones"
-                                :key="comunicacion.id"
-                                class="bg-gray-50 rounded-lg p-4 border border-gray-200"
+                                v-for="cita in citasFiltradas"
+                                :key="cita.id"
+                                class="bg-white rounded-lg shadow-md overflow-hidden"
                             >
-                                <div
-                                    class="flex justify-between items-start mb-2"
-                                >
-                                    <div class="flex-1">
-                                        <h4
-                                            class="text-sm font-medium text-gray-900"
+                                <div class="p-4">
+                                    <!-- Estado de la cita -->
+                                    <div
+                                        class="flex justify-between items-start mb-3"
+                                    >
+                                        <span
+                                            :class="{
+                                                'px-2 py-1 text-xs font-semibold rounded-full': true,
+                                                'bg-yellow-100 text-yellow-800':
+                                                    cita.estado === 'pendiente',
+                                                'bg-green-100 text-green-800':
+                                                    cita.estado === 'asistio',
+                                                'bg-red-100 text-red-800':
+                                                    cita.estado ===
+                                                    'no_asistio',
+                                            }"
                                         >
-                                            {{ comunicacion.asunto }}
-                                        </h4>
-                                        <p class="text-xs text-gray-500 mt-1">
-                                            {{ comunicacion.tipo }} -
                                             {{
-                                                formatDate(
-                                                    comunicacion.created_at
-                                                )
+                                                cita.estado === "pendiente"
+                                                    ? "Pendiente"
+                                                    : cita.estado === "asistio"
+                                                    ? "Asistió"
+                                                    : "No Asistió"
+                                            }}
+                                        </span>
+                                        <div class="flex space-x-2">
+                                            <button
+                                                @click="editCita(cita)"
+                                                class="text-indigo-600 hover:text-indigo-900"
+                                            >
+                                                <svg
+                                                    class="w-5 h-5"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                    />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                @click="deleteCita(cita)"
+                                                class="text-red-600 hover:text-red-900"
+                                            >
+                                                <svg
+                                                    class="w-5 h-5"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Fechas -->
+                                    <div class="mb-3">
+                                        <p class="text-sm text-gray-600">
+                                            <span class="font-semibold"
+                                                >Fecha de Visita:</span
+                                            ><br />
+                                            {{ formatDate(cita.fecha_visita) }}
+                                        </p>
+                                        <p class="text-sm text-gray-600 mt-2">
+                                            <span class="font-semibold"
+                                                >Próxima Cita:</span
+                                            ><br />
+                                            {{
+                                                cita.fecha_proxima_cita
+                                                    ? formatDate(
+                                                          cita.fecha_proxima_cita
+                                                      )
+                                                    : "No programada"
                                             }}
                                         </p>
                                     </div>
-                                    <span
-                                        :class="
-                                            getComunicacionEstadoClass(
-                                                comunicacion.estado
-                                            )
-                                        "
-                                        class="px-2 py-1 text-xs font-semibold rounded-full"
-                                    >
-                                        {{ comunicacion.estado }}
-                                    </span>
-                                </div>
-                                <p class="text-sm text-gray-700 mb-3">
-                                    {{ comunicacion.mensaje }}
-                                </p>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs text-gray-500"
-                                        >Por: {{ comunicacion.usuario }}</span
-                                    >
-                                    <div class="flex space-x-2">
-                                        <button
-                                            class="text-blue-600 hover:text-blue-900 text-xs font-medium inline-flex items-center"
-                                            title="Ver detalles"
-                                        >
-                                            <svg
-                                                class="w-3 h-3 mr-1"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                ></path>
-                                            </svg>
-                                            Ver detalles
-                                        </button>
-                                        <button
-                                            class="text-green-600 hover:text-green-900 text-xs font-medium inline-flex items-center"
-                                            title="Responder"
-                                        >
-                                            <svg
-                                                class="w-3 h-3 mr-1"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
-                                                ></path>
-                                            </svg>
-                                            Responder
-                                        </button>
+
+                                    <!-- Descripción -->
+                                    <div class="mt-3">
+                                        <p class="text-sm text-gray-600">
+                                            <span class="font-semibold"
+                                                >Descripción:</span
+                                            ><br />
+                                            {{ cita.descripcion }}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div v-else class="text-center py-8">
-                            <svg
-                                class="mx-auto h-12 w-12 text-gray-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+
+                            <!-- Mensaje cuando no hay citas -->
+                            <div
+                                v-if="
+                                    !productor.citas ||
+                                    citasFiltradas.length === 0
+                                "
+                                class="col-span-full text-center py-8"
                             >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                                ></path>
-                            </svg>
-                            <p class="text-gray-500 mt-2">
-                                No hay comunicaciones registradas para este
-                                productor.
-                            </p>
+                                <svg
+                                    class="mx-auto h-12 w-12 text-gray-400"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    version="1.1"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                                    />
+                                </svg>
+                                <p class="mt-2 text-gray-500">
+                                    {{
+                                        filtroEstado
+                                            ? "No hay citas con el estado seleccionado"
+                                            : "No hay citas registradas"
+                                    }}
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -660,6 +707,7 @@
                                                     viewBox="0 0 24 24"
                                                     fill="currentColor"
                                                     aria-hidden="true"
+                                                    version="1.1"
                                                 >
                                                     <path
                                                         :d="
@@ -807,13 +855,15 @@
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                                version="1.1"
                             >
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     stroke-width="2"
                                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                ></path>
+                                />
                             </svg>
                             <p class="text-gray-500 mt-2">
                                 No hay actividades registradas en el historial.
@@ -826,12 +876,12 @@
 
         <!-- Modal para Documentos -->
         <DocumentoModal
-            :show="showModal"
+            :show="showDocumentoModal"
             :tipos-documento="tiposDocumento"
             :productor-id="productor.id"
             :documento="selectedDocumento"
             :mode="modalMode"
-            @close="closeModal"
+            @close="closeDocumentoModal"
             @submitted="refreshPage"
         />
         <div
@@ -946,6 +996,8 @@
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                                version="1.1"
                             >
                                 <path
                                     stroke-linecap="round"
@@ -977,6 +1029,8 @@
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                            version="1.1"
                         >
                             <path
                                 stroke-linecap="round"
@@ -1052,13 +1106,15 @@
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                                version="1.1"
                             >
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     stroke-width="2"
                                     d="M6 18L18 6M6 6l12 12"
-                                ></path>
+                                />
                             </svg>
                         </button>
                     </div>
@@ -1146,14 +1202,21 @@
                 </div>
             </div>
         </div>
+        <CitaModal
+            :show="showCitaModal"
+            :cita="selectedCita"
+            :productor-id="productor.id"
+            @close="closeCitaModal"
+        />
     </AuthenticatedLayout>
 </template>
 
 <script setup>
 import DocumentoModal from "@/Components/DocumentoModal.vue";
+import CitaModal from "@/Components/CitaModal.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Link, useForm, router } from "@inertiajs/vue3";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 
 const props = defineProps({
     productor: Object,
@@ -1161,7 +1224,7 @@ const props = defineProps({
 });
 
 // Variables reactivas para el modal de documentos
-const showModal = ref(false);
+const showDocumentoModal = ref(false);
 const selectedDocumento = ref(null);
 const modalMode = ref("create"); // Modos: 'create', 'edit', 'view'
 
@@ -1169,7 +1232,7 @@ const modalMode = ref("create"); // Modos: 'create', 'edit', 'view'
 const openDocumentoModal = (documento = null) => {
     selectedDocumento.value = documento;
     modalMode.value = documento ? "edit" : "create";
-    showModal.value = true;
+    showDocumentoModal.value = true;
     documentForm.reset();
 
     if (documento) {
@@ -1185,12 +1248,17 @@ const openDocumentoModal = (documento = null) => {
 const openViewModal = (documento) => {
     selectedDocumento.value = documento;
     modalMode.value = "view";
-    showModal.value = true;
+    showDocumentoModal.value = true;
 };
 
-const closeModal = () => {
-    showModal.value = false;
+const closeDocumentoModal = () => {
+    showDocumentoModal.value = false;
     selectedDocumento.value = null;
+};
+
+const closeCitaModal = () => {
+    showCitaModal.value = false;
+    selectedCita.value = null;
 };
 
 const refreshPage = () => {
@@ -1199,6 +1267,18 @@ const refreshPage = () => {
 const showCommunicationModal = ref(false);
 const activeTab = ref("documentos");
 const selectedFile = ref(null);
+const showCitaModal = ref(false);
+const selectedCita = ref(null);
+const filtroEstado = ref("");
+
+const citasFiltradas = computed(() => {
+    if (!props.productor.citas) return [];
+    return filtroEstado.value
+        ? props.productor.citas.filter(
+              (cita) => cita.estado === filtroEstado.value
+          )
+        : props.productor.citas;
+});
 
 // Datos de ejemplo para comunicaciones
 const comunicaciones = ref([
@@ -1334,7 +1414,7 @@ const formatFileSize = (bytes) => {
 const submitDocument = () => {
     documentForm.post(route("documentos.store"), {
         onSuccess: () => {
-            closeModal();
+            closeDocumentoModal();
             // Recargar la página para mostrar el nuevo documento
             router.reload();
         },
@@ -1416,6 +1496,21 @@ const getHistorialIconClass = (tipo) => {
     }
 };
 
+const editCita = (cita) => {
+    selectedCita.value = cita;
+    showCitaModal.value = true;
+};
+
+const deleteCita = (cita) => {
+    if (confirm("¿Estás seguro de que deseas eliminar esta cita?")) {
+        router.delete(route("citas.destroy", cita.id), {
+            onSuccess: () => {
+                router.reload();
+            },
+        });
+    }
+};
+
 const submitCommunication = () => {
     communicationForm.post(route("comunicaciones.store"), {
         onSuccess: () => {
@@ -1433,22 +1528,22 @@ const submitCommunication = () => {
 const formatDate = (dateString) => {
     if (!dateString) return "No especificada";
     const date = new Date(dateString);
-    return date.toLocaleDateString("es-ES", {
+    return date.toLocaleDateString("es-AR", {
         year: "numeric",
         month: "long",
         day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+        timeZone: 'America/Argentina/Buenos_Aires'
     });
 };
 
 const formatDateOnly = (dateString) => {
     if (!dateString) return "No especificada";
     const date = new Date(dateString);
-    return date.toLocaleDateString("es-ES", {
+    return date.toLocaleDateString("es-AR", {
         year: "numeric",
         month: "long",
         day: "numeric",
+        timeZone: 'America/Argentina/Buenos_Aires'
     });
 };
 </script>
