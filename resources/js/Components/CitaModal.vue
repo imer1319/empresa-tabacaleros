@@ -1,5 +1,5 @@
 <template>
-    <Modal :show="show" @close="closeModal">
+    <Modal :show="show" @close="closeModal" :closeable="true" :maxWidth="'2xl'">
         <div class="p-6">
             <h2 class="text-lg font-medium text-gray-900">
                 {{ isEditing ? "Editar Cita" : "Nueva Cita" }}
@@ -95,7 +95,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, watch, computed } from "vue";
+import { ref, watch, computed } from "vue";
 import Modal from "@/Components/Modal.vue";
 import InputLabel from "@/Components/InputLabel.vue";
 import TextInput from "@/Components/TextInput.vue";

@@ -22,21 +22,26 @@ const showSlot = ref(props.show);
 
 watch(
     () => props.show,
-    () => {
-        if (props.show) {
+    (value) => {
+        if (value) {
             document.body.style.overflow = 'hidden';
             showSlot.value = true;
-
-            dialog.value?.showModal();
+            setTimeout(() => {
+                if (dialog.value) {
+                    dialog.value.showModal();
+                }
+            }, 100);
         } else {
             document.body.style.overflow = '';
-
             setTimeout(() => {
-                dialog.value?.close();
+                if (dialog.value) {
+                    dialog.value.close();
+                }
                 showSlot.value = false;
             }, 200);
         }
     },
+    { immediate: true }
 );
 
 const close = () => {
@@ -59,7 +64,6 @@ onMounted(() => document.addEventListener('keydown', closeOnEscape));
 
 onUnmounted(() => {
     document.removeEventListener('keydown', closeOnEscape);
-
     document.body.style.overflow = '';
 });
 
