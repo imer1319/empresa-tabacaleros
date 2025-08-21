@@ -2,7 +2,10 @@
     <div v-if="!documento" class="p-4 text-center text-gray-500">
         No se encontró información del documento.
     </div>
-    <div v-else class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+    <div
+        v-else
+        class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6"
+    >
         <div class="flex items-center justify-between mb-6">
             <div class="flex items-center space-x-4">
                 <div
@@ -43,7 +46,7 @@
         </div>
 
         <!-- Información básica -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <div class="bg-gray-50 p-4 rounded-lg">
                 <h3 class="text-sm font-medium text-gray-500 mb-2">
                     Fecha de Creación
@@ -90,7 +93,7 @@
         <!-- Información del archivo -->
         <div
             v-if="documento.archivo_nombre"
-            class="bg-blue-50 p-6 rounded-lg mb-6"
+            class="p-6 rounded-lg mb-6 border-dashed border-2"
         >
             <h3 class="text-lg font-medium text-gray-900 mb-4">
                 Archivo Adjunto
@@ -151,10 +154,7 @@
         </div>
 
         <!-- Observaciones -->
-        <div
-            v-if="documento.observaciones"
-            class="bg-yellow-50 p-6 rounded-lg mb-6"
-        >
+        <div v-if="documento.observaciones" class="p-6 rounded-lg mb-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">
                 Observaciones
             </h3>
@@ -162,7 +162,6 @@
                 {{ documento.observaciones }}
             </p>
         </div>
-
         <!-- Información de revisión -->
         <div v-if="documento.revisor" class="bg-gray-50 p-6 rounded-lg">
             <h3 class="text-lg font-medium text-gray-900 mb-4">
