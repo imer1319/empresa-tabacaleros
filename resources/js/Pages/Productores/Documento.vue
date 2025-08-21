@@ -193,15 +193,25 @@
         </div>
 
         <!-- Modal para Documentos -->
-        <DocumentoModal
+        <Modal
             :show="showDocumentoModal"
-            :tipos-documento="tiposDocumento"
-            :productor-id="productor.id"
-            :documento="selectedDocumento"
-            :mode="modalMode"
+            :title="modalTitle"
+            :show-footer="false"
             @close="closeDocumentoModal"
-            @submitted="refreshPage"
-        />
+        >
+            <DocumentForm
+                v-if="modalMode !== 'view'"
+                :productor-id="productor.id"
+                :tipos-documento="tiposDocumento"
+                :documento="selectedDocumento"
+                :mode="modalMode"
+                :errors="errors"
+                @submitted="refreshPage"
+                @cancel="closeDocumentoModal"
+            />
+
+            <DocumentShow v-else :documento="selectedDocumento" />
+        </Modal>
 
         <!-- Vista de documento individual -->
         <div
@@ -407,8 +417,10 @@
 </template>
 
 <script setup>
-import DocumentoModal from "@/Components/DocumentoModal.vue";
-import { ref } from "vue";
+import Modal from "@/Components/Modal.vue";
+import DocumentForm from "@/Pages/Productores/DocumentForm.vue";
+import DocumentShow from "@/Pages/Productores/DocumentShow.vue";
+import { ref, computed } from "vue";
 import { router } from "@inertiajs/vue3";
 
 const props = defineProps({
@@ -423,6 +435,20 @@ const emit = defineEmits(["openCommunicationModal"]);
 const showDocumentoModal = ref(false);
 const selectedDocumento = ref(null);
 const modalMode = ref("create"); // Modos: 'create', 'edit', 'view'
+const errors = ref({});
+
+const modalTitle = computed(() => {
+    switch (modalMode.value) {
+        case "create":
+            return "Nuevo Documento";
+        case "edit":
+            return "Editar Documento";
+        case "view":
+            return "Detalles del Documento";
+        default:
+            return "Documento";
+    }
+});
 
 // Métodos para manejar el modal de documentos
 const openDocumentoModal = (documento = null) => {

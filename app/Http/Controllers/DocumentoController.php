@@ -244,6 +244,14 @@ class DocumentoController extends Controller
             ));
         }
 
+        // Verificar si la petición viene de la vista del productor
+        $referer = request()->headers->get('referer');
+        $fromProductor = str_contains($referer, '/productores/');
+        if ($fromProductor) {
+            return redirect()->route('productores.show', $documento->productor_id)
+                ->with('success', 'Documento actualizado exitosamente.');
+        }
+
         return redirect()->route('documentos.show', $documento)
             ->with('success', 'Documento actualizado exitosamente.');
     }
