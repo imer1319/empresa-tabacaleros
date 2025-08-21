@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\DocumentoActualizado;
 use App\Models\Documento;
 use App\Models\Productor;
 use App\Models\TipoDocumento;
@@ -125,6 +126,13 @@ class DocumentoController extends Controller
 
         $documento->save();
 
+        event(new DocumentoActualizado(
+            $documento,
+            $documento->getAttributes(),
+            [],
+            Auth::id()
+        ));
+
         // Verificar si la petición viene de la vista del productor
         $referer = request()->headers->get('referer');
         $fromProductor = str_contains($referer, '/productores/');
@@ -205,6 +213,9 @@ class DocumentoController extends Controller
             $documento->archivo_tamaño = $archivo->getSize();
         }
 
+        // Guardar valores anteriores antes de actualizar
+        $valoresAnteriores = $documento->getAttributes();
+
         // Actualizar fecha de revisión si se cambió el estado
         if ($request->filled('estado') && $documento->isDirty('estado')) {
             $documento->fecha_revision = now();
@@ -212,6 +223,22 @@ class DocumentoController extends Controller
         }
 
         $documento->save();
+
+        // Identificar cambios significativos
+        $cambios = array_diff_assoc(
+            $documento->only(['estado', 'fecha_entrega', 'fecha_vencimiento', 'fecha_revision', 'revisado_por']),
+            $valoresAnteriores
+        );
+
+        // Disparar evento si hubo cambios significativos
+        if (!empty($cambios)) {
+            event(new DocumentoActualizado(
+                $documento,
+                $cambios,
+                $valoresAnteriores,
+                Auth::id()
+            ));
+        }
 
         return redirect()->route('documentos.show', $documento)
             ->with('success', 'Documento actualizado exitosamente.');
@@ -222,12 +249,22 @@ class DocumentoController extends Controller
      */
     public function destroy(Documento $documento)
     {
+        // Guardar valores antes de eliminar
+        $valoresAnteriores = $documento->getAttributes();
+
         // Eliminar archivo si existe
         if ($documento->archivo_path) {
             Storage::disk('public')->delete($documento->archivo_path);
         }
 
         $documento->delete();
+
+        event(new DocumentoActualizado(
+            $documento,
+            [],
+            $valoresAnteriores,
+            Auth::id()
+        ));
 
         return redirect()->route('documentos.index')
             ->with('success', 'Documento eliminado exitosamente.');

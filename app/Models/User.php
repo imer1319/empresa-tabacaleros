@@ -45,4 +45,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Relación con el historial del productor
+     */
+    public function historialProductor()
+    {
+        return $this->hasMany(HistorialProductor::class, 'usuario_id');
+    }
 }

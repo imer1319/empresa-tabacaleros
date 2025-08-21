@@ -33,4 +33,10 @@ class Productor extends Model
     // {
     //     return $this->hasMany(Comunicacion::class);
     // }
+
+    // Relación con historial
+    public function historial()
+    {
+        return $this->hasMany(HistorialProductor::class)->orderBy('created_at', 'desc');
+    }
 }

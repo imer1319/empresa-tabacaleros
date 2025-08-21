@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ProductorActualizado;
 use App\Models\Productor;
 use App\Models\TipoDocumento;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class ProductorController extends Controller
@@ -64,7 +66,14 @@ class ProductorController extends Controller
             'estado_documentacion' => 'required|in:En proceso,Aprobado,Faltante'
         ]);
 
-        Productor::create($validated);
+        $productor = Productor::create($validated);
+
+        event(new ProductorActualizado(
+            $productor,
+            $validated,
+            [],
+            Auth::id()
+        ));
 
         return redirect()->route('productores.index')
             ->with('success', 'Productor creado exitosamente.');
@@ -76,9 +85,16 @@ class ProductorController extends Controller
     public function show(Productor $productore)
     {
         $tiposDocumento = TipoDocumento::activos()->ordenados()->get();
+        $productore->load([
+            'documentos.tipoDocumento',
+            'historial' => function ($query) {
+                $query->with('usuario')->latest();
+            }
+        ]);
+
         return Inertia::render('Productores/Show', [
-            'productor' => $productore->load(['documentos.tipoDocumento']),
-            'tiposDocumento' => $tiposDocumento->pluck('nombre', 'id'),
+            'productor' => $productore,
+            'tiposDocumento' => $tiposDocumento,
         ]);
     }
 
@@ -109,7 +125,24 @@ class ProductorController extends Controller
             'estado_documentacion' => 'required|in:En proceso,Aprobado,Faltante'
         ]);
 
-        $productore->update($validated);
+        // Obtener los valores actuales antes de la actualización
+        $valoresAnteriores = $productore->getAttributes();
+        // Identificar solo los campos que realmente cambiaron
+        $cambios = array_filter($validated, function ($valor, $campo) use ($valoresAnteriores) {
+            return (!isset($valoresAnteriores[$campo]) && $valor !== null) ||
+                (isset($valoresAnteriores[$campo]) && $valor !== $valoresAnteriores[$campo]);
+        }, ARRAY_FILTER_USE_BOTH);
+
+        if (!empty($cambios)) {
+            $productore->update($validated);
+
+            event(new ProductorActualizado(
+                $productore,
+                $cambios,
+                $valoresAnteriores,
+                Auth::id()
+            ));
+        }
 
         return redirect()->route('productores.index')
             ->with('success', 'Productor actualizado exitosamente.');
@@ -120,7 +153,15 @@ class ProductorController extends Controller
      */
     public function destroy(Productor $productore)
     {
+        $valoresAnteriores = $productore->getAttributes();
         $productore->delete();
+
+        event(new ProductorActualizado(
+            $productore,
+            [],
+            $valoresAnteriores,
+            Auth::id()
+        ));
 
         return redirect()->route('productores.index')
             ->with('success', 'Productor eliminado exitosamente.');

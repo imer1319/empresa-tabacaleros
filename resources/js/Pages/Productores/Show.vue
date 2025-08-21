@@ -237,7 +237,7 @@
                                 Documentos del Productor
                             </h3>
                             <button
-                                @click="showModal = true"
+                                @click="openDocumentoModal()"
                                 class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150"
                             >
                                 <svg
@@ -311,9 +311,7 @@
                                     <!-- Acciones -->
                                     <div class="flex justify-end space-x-3">
                                         <button
-                                            @click="
-                                                downloadDocument(documento.id)
-                                            "
+                                            @click="openViewModal(documento)"
                                             class="inline-flex items-center justify-center p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-lg transition-colors"
                                             title="Ver documento"
                                         >
@@ -337,12 +335,16 @@
                                                 ></path>
                                             </svg>
                                         </button>
-                                        <button
-                                            @click="
-                                                downloadDocument(documento.id)
+                                        <a
+                                            :href="
+                                                route(
+                                                    'documentos.download',
+                                                    documento.id
+                                                )
                                             "
-                                            class="inline-flex items-center justify-center p-2 text-green-600 hover:text-green-900 hover:bg-green-100 rounded-lg transition-colors"
+                                            class="inline-flex items-center justify-center p-2 text-green-600 hover:text-green-700 hover:bg-green-100 rounded-lg transition-colors"
                                             title="Descargar documento"
+                                            target="_blank"
                                         >
                                             <svg
                                                 class="w-5 h-5"
@@ -353,13 +355,16 @@
                                                 xmlns="http://www.w3.org/2000/svg"
                                             >
                                                 <path
-                                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                                                     stroke-linecap="round"
                                                     stroke-linejoin="round"
                                                 ></path>
                                             </svg>
-                                        </button>
+                                        </a>
                                         <button
+                                            @click="
+                                                openDocumentoModal(documento)
+                                            "
                                             class="inline-flex items-center justify-center p-2 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-100 rounded-lg transition-colors"
                                             title="Editar documento"
                                         >
@@ -617,68 +622,179 @@
                         </div>
 
                         <div
-                            v-if="historial && historial.length > 0"
+                            v-if="
+                                productor.historial &&
+                                productor.historial.length > 0
+                            "
                             class="flow-root"
                         >
                             <ul class="-mb-8">
                                 <li
-                                    v-for="(actividad, index) in historial"
+                                    v-for="(
+                                        actividad, index
+                                    ) in productor.historial"
                                     :key="actividad.id"
                                     class="relative pb-8"
                                 >
                                     <div
-                                        v-if="index !== historial.length - 1"
+                                        v-if="
+                                            index !==
+                                            productor.historial.length - 1
+                                        "
                                         class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
                                         aria-hidden="true"
                                     ></div>
                                     <div class="relative flex space-x-3">
                                         <div>
                                             <span
-                                                :class="
-                                                    getHistorialIconClass(
-                                                        actividad.tipo
-                                                    )
-                                                "
-                                                class="h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white"
+                                                :class="[
+                                                    'h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white',
+                                                    obtenerColor(
+                                                        actividad.tipo_cambio
+                                                    ),
+                                                ]"
                                             >
                                                 <svg
-                                                    class="h-4 w-4 text-white"
+                                                    class="h-5 w-5 text-white"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
                                                     fill="currentColor"
-                                                    viewBox="0 0 20 20"
+                                                    aria-hidden="true"
                                                 >
                                                     <path
-                                                        fill-rule="evenodd"
-                                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                        clip-rule="evenodd"
+                                                        :d="
+                                                            obtenerIcono(
+                                                                actividad.tipo_cambio
+                                                            )
+                                                        "
                                                     />
                                                 </svg>
                                             </span>
                                         </div>
-                                        <div class="min-w-0 flex-1 pt-1.5">
+                                        <div class="min-w-0 flex-1">
                                             <div>
+                                                <div class="text-sm">
+                                                    <span
+                                                        class="font-medium text-gray-900"
+                                                    >
+                                                        {{
+                                                            actividad.usuario
+                                                                ?.name ||
+                                                            "Sistema"
+                                                        }}
+                                                    </span>
+                                                </div>
                                                 <p
-                                                    class="text-sm text-gray-900 font-medium"
+                                                    class="mt-0.5 text-sm text-gray-500"
                                                 >
-                                                    {{ actividad.descripcion }}
-                                                </p>
-                                                <p
-                                                    class="text-xs text-gray-500 mt-1"
-                                                >
-                                                    {{ actividad.detalles }}
+                                                    {{
+                                                        formatearFecha(
+                                                            actividad.created_at
+                                                        )
+                                                    }}
                                                 </p>
                                             </div>
                                             <div
-                                                class="mt-2 text-xs text-gray-500"
+                                                class="mt-2 text-sm text-gray-700"
                                             >
-                                                <time>{{
-                                                    formatDate(
-                                                        actividad.created_at
-                                                    )
-                                                }}</time>
-                                                <span class="mx-1">•</span>
-                                                <span>{{
-                                                    actividad.usuario
-                                                }}</span>
+                                                <p>
+                                                    {{ actividad.descripcion }}
+                                                </p>
+                                                <div
+                                                    v-if="actividad.detalles"
+                                                    class="mt-2"
+                                                >
+                                                    <template
+                                                        v-if="
+                                                            actividad.tipo_cambio ===
+                                                            'datos'
+                                                        "
+                                                    >
+                                                        <div
+                                                            v-for="(
+                                                                cambio, campo
+                                                            ) in actividad.detalles"
+                                                            :key="campo"
+                                                            class="mt-1 text-sm"
+                                                        >
+                                                            <span
+                                                                class="font-medium"
+                                                                >{{
+                                                                    campo
+                                                                }}:</span
+                                                            >
+                                                            <span
+                                                                class="text-red-500 line-through mr-2"
+                                                                >{{
+                                                                    cambio.anterior ||
+                                                                    "No especificado"
+                                                                }}</span
+                                                            >
+                                                            <span
+                                                                class="text-green-600 font-medium"
+                                                                >→</span
+                                                            >
+                                                            <span
+                                                                class="text-green-600 ml-2"
+                                                                >{{
+                                                                    cambio.nuevo ||
+                                                                    "No especificado"
+                                                                }}</span
+                                                            >
+                                                        </div>
+                                                    </template>
+                                                    <template
+                                                        v-else-if="
+                                                            actividad.tipo_cambio ===
+                                                            'documento'
+                                                        "
+                                                    >
+                                                        <div
+                                                            class="mt-1 text-sm"
+                                                        >
+                                                            <p
+                                                                class="font-medium"
+                                                            >
+                                                                {{
+                                                                    actividad
+                                                                        .detalles
+                                                                        .tipo_documento
+                                                                }}
+                                                            </p>
+                                                            <div
+                                                                v-for="(
+                                                                    cambio,
+                                                                    campo
+                                                                ) in actividad
+                                                                    .detalles
+                                                                    .cambios"
+                                                                :key="campo"
+                                                                class="mt-1"
+                                                            >
+                                                                <span
+                                                                    class="font-medium"
+                                                                    >{{
+                                                                        campo
+                                                                    }}:</span
+                                                                >
+                                                                <span
+                                                                    class="text-red-500 line-through mr-1"
+                                                                    >{{
+                                                                        cambio.anterior ||
+                                                                        "No especificado"
+                                                                    }}</span
+                                                                >
+                                                                <span
+                                                                    class="text-green-500"
+                                                                    >{{
+                                                                        cambio.nuevo ||
+                                                                        "No especificado"
+                                                                    }}</span
+                                                                >
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -708,24 +824,27 @@
             </div>
         </div>
 
-        <!-- Modal para Agregar Documento -->
+        <!-- Modal para Documentos -->
+        <DocumentoModal
+            :show="showModal"
+            :tipos-documento="tiposDocumento"
+            :productor-id="productor.id"
+            :documento="selectedDocumento"
+            :mode="modalMode"
+            @close="closeModal"
+            @submitted="refreshPage"
+        />
         <div
-            v-if="showModal"
-            class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+            v-if="selectedDocumento"
+            class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6"
         >
-            <div
-                class="relative top-10 mx-auto p-6 border max-w-2xl shadow-lg rounded-xl bg-white"
-            >
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-semibold text-gray-900">
-                        Agregar Documento
-                    </h3>
-                    <button
-                        @click="closeModal"
-                        class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center space-x-4">
+                    <div
+                        class="w-16 h-16 bg-blue-500 rounded-lg flex items-center justify-center"
                     >
                         <svg
-                            class="w-6 h-6"
+                            class="w-8 h-8 text-white"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -734,412 +853,180 @@
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
                                 stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                             ></path>
                         </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">
+                            {{ selectedDocumento.nombre }}
+                        </h1>
+                        <p class="text-gray-600">
+                            Tipo:
+                            {{
+                                selectedDocumento.tipo_documento?.nombre ||
+                                "Sin tipo"
+                            }}
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span
+                        :class="getEstadoClass(selectedDocumento.estado)"
+                        class="px-4 py-2 rounded-full text-sm font-medium"
+                    >
+                        {{ selectedDocumento.estado || "Pendiente" }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Información básica -->
+            <div
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6"
+            >
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-sm font-medium text-gray-500 mb-2">
+                        Fecha de Creación
+                    </h3>
+                    <p class="text-lg font-semibold text-gray-900">
+                        {{ formatDate(selectedDocumento.created_at) }}
+                    </p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-sm font-medium text-gray-500 mb-2">
+                        Fecha de Entrega
+                    </h3>
+                    <p class="text-lg font-semibold text-gray-900">
+                        {{
+                            formatDateOnly(selectedDocumento.fecha_entrega) ||
+                            "No especificada"
+                        }}
+                    </p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-sm font-medium text-gray-500 mb-2">
+                        Fecha de Vencimiento
+                    </h3>
+                    <p class="text-lg font-semibold text-gray-900">
+                        {{
+                            formatDateOnly(
+                                selectedDocumento.fecha_vencimiento
+                            ) || "No especificada"
+                        }}
+                    </p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-sm font-medium text-gray-500 mb-2">
+                        Fecha de Revisión
+                    </h3>
+                    <p class="text-lg font-semibold text-gray-900">
+                        {{
+                            formatDateOnly(selectedDocumento.fecha_revision) ||
+                            "No revisado"
+                        }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Información del archivo -->
+            <div
+                v-if="selectedDocumento.archivo_nombre"
+                class="bg-blue-50 p-6 rounded-lg mb-6"
+            >
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                    Archivo Adjunto
+                </h3>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div
+                            class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center"
+                        >
+                            <svg
+                                class="w-6 h-6 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                                ></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">
+                                {{ selectedDocumento.archivo_nombre }}
+                            </p>
+                            <p class="text-xs text-gray-600">
+                                Tamaño:
+                                {{
+                                    selectedDocumento.tamaño_formateado ||
+                                    "No disponible"
+                                }}
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        @click="downloadDocument(selectedDocumento)"
+                        class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                    >
+                        <svg
+                            class="w-4 h-4 mr-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                            ></path>
+                        </svg>
+                        Descargar
                     </button>
                 </div>
+            </div>
 
-                <form @submit.prevent="submitDocument" class="space-y-6">
-                    <!-- Sección 1: Información del Documento -->
-                    <div
-                        class="bg-white rounded-lg shadow-sm border border-gray-200"
-                    >
-                        <div class="border-b border-gray-200">
-                            <div class="flex items-center px-6 pt-6">
-                                <div
-                                    class="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-full mr-3"
-                                >
-                                    <svg
-                                        class="w-4 h-4 text-white"
-                                        fill="currentColor"
-                                        viewBox="0 0 20 20"
-                                    >
-                                        <path
-                                            fill-rule="evenodd"
-                                            d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                                            clip-rule="evenodd"
-                                        ></path>
-                                    </svg>
-                                </div>
-                                <h4 class="text-lg font-medium text-gray-900">
-                                    Información del Documento
-                                </h4>
-                            </div>
-                            <div class="p-6">
-                                <div
-                                    class="grid grid-cols-1 md:grid-cols-2 gap-6"
-                                >
-                                    <!-- Nombre del Documento -->
-                                    <div>
-                                        <label
-                                            for="nombre"
-                                            class="block text-sm font-medium text-gray-700 mb-2"
-                                        >
-                                            Nombre del Documento *
-                                        </label>
-                                        <input
-                                            id="nombre"
-                                            v-model="documentForm.nombre"
-                                            type="text"
-                                            required
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                            :class="{
-                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
-                                                    documentForm.errors.nombre,
-                                            }"
-                                        />
-                                        <div
-                                            v-if="documentForm.errors.nombre"
-                                            class="mt-2 text-sm text-red-600"
-                                        >
-                                            {{ documentForm.errors.nombre }}
-                                        </div>
-                                    </div>
+            <!-- Observaciones -->
+            <div
+                v-if="selectedDocumento.observaciones"
+                class="bg-yellow-50 p-6 rounded-lg mb-6"
+            >
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                    Observaciones
+                </h3>
+                <p class="text-gray-700 whitespace-pre-wrap">
+                    {{ selectedDocumento.observaciones }}
+                </p>
+            </div>
 
-                                    <!-- Tipo de Documento -->
-                                    <div>
-                                        <label
-                                            for="tipo_documento_id"
-                                            class="block text-sm font-medium text-gray-700 mb-2"
-                                        >
-                                            Tipo de Documento
-                                        </label>
-                                        <select
-                                            id="tipo_documento_id"
-                                            v-model="
-                                                documentForm.tipo_documento_id
-                                            "
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                            :class="{
-                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
-                                                    documentForm.errors
-                                                        .tipo_documento_id,
-                                            }"
-                                        >
-                                            <option value="" disabled selected>
-                                                Seleccione un tipo
-                                            </option>
-                                            <option
-                                                v-for="(
-                                                    nombre, id
-                                                ) in tiposDocumento"
-                                                :key="id"
-                                                :value="id"
-                                            >
-                                                {{ nombre }}
-                                            </option>
-                                        </select>
-                                        <div
-                                            v-if="
-                                                documentForm.errors
-                                                    .tipo_documento_id
-                                            "
-                                            class="mt-2 text-sm text-red-600"
-                                        >
-                                            {{
-                                                documentForm.errors
-                                                    .tipo_documento_id
-                                            }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Estado y Fechas -->
-                                <div
-                                    class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6"
-                                >
-                                    <!-- Estado -->
-                                    <div>
-                                        <label
-                                            for="estado"
-                                            class="block text-sm font-medium text-gray-700 mb-2"
-                                        >
-                                            Estado
-                                        </label>
-                                        <select
-                                            id="estado"
-                                            v-model="documentForm.estado"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        >
-                                            <option value="pendiente">
-                                                Pendiente
-                                            </option>
-                                            <option value="entregado">
-                                                Entregado
-                                            </option>
-                                            <option value="aprobado">
-                                                Aprobado
-                                            </option>
-                                            <option value="rechazado">
-                                                Rechazado
-                                            </option>
-                                            <option value="vencido">
-                                                Vencido
-                                            </option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Fecha de Entrega -->
-                                    <div>
-                                        <label
-                                            for="fecha_entrega"
-                                            class="block text-sm font-medium text-gray-700 mb-2"
-                                        >
-                                            Fecha de Entrega
-                                        </label>
-                                        <input
-                                            id="fecha_entrega"
-                                            v-model="documentForm.fecha_entrega"
-                                            type="date"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        />
-                                    </div>
-
-                                    <!-- Fecha de Revisión -->
-                                    <div>
-                                        <label
-                                            for="fecha_revision"
-                                            class="block text-sm font-medium text-gray-700 mb-2"
-                                        >
-                                            Fecha de Revisión
-                                        </label>
-                                        <input
-                                            id="fecha_revision"
-                                            v-model="
-                                                documentForm.fecha_revision
-                                            "
-                                            type="date"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        />
-                                    </div>
-
-                                    <!-- Fecha de Vencimiento -->
-                                    <div>
-                                        <label
-                                            for="fecha_vencimiento"
-                                            class="block text-sm font-medium text-gray-700 mb-2"
-                                        >
-                                            Fecha de Vencimiento
-                                        </label>
-                                        <input
-                                            id="fecha_vencimiento"
-                                            v-model="
-                                                documentForm.fecha_vencimiento
-                                            "
-                                            type="date"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <!-- Información de revisión -->
+            <div
+                v-if="selectedDocumento.revisor"
+                class="bg-gray-50 p-6 rounded-lg"
+            >
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                    Información de Revisión
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">Revisado por:</p>
+                        <p class="text-sm font-medium text-gray-900">
+                            {{ selectedDocumento.revisor.name }}
+                        </p>
                     </div>
-
-                    <!-- Sección 2: Archivo -->
-                    <div
-                        class="bg-white rounded-lg shadow-sm border border-gray-200"
-                    >
-                        <div class="border-b border-gray-200">
-                            <div class="flex items-center px-6 pt-6">
-                                <div
-                                    class="flex items-center justify-center w-8 h-8 bg-green-600 rounded-full mr-3"
-                                >
-                                    <svg
-                                        class="w-4 h-4 text-white"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                                        ></path>
-                                    </svg>
-                                </div>
-                                <h4 class="text-lg font-medium text-gray-900">
-                                    Archivo del Documento
-                                </h4>
-                            </div>
-                            <div class="p-6">
-                                <div
-                                    class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center"
-                                >
-                                    <input
-                                        ref="fileInput"
-                                        type="file"
-                                        @change="handleFileChange"
-                                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                                        class="hidden"
-                                    />
-                                    <div v-if="!selectedFile">
-                                        <svg
-                                            class="mx-auto h-12 w-12 text-gray-400"
-                                            stroke="currentColor"
-                                            fill="none"
-                                            viewBox="0 0 48 48"
-                                        >
-                                            <path
-                                                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                                                stroke-width="2"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                            />
-                                        </svg>
-                                        <p class="mt-2 text-sm text-gray-600">
-                                            <button
-                                                type="button"
-                                                @click="$refs.fileInput.click()"
-                                                class="font-medium text-blue-600 hover:text-blue-500"
-                                            >
-                                                Seleccionar archivo
-                                            </button>
-                                            o arrastra y suelta aquí
-                                        </p>
-                                        <p class="text-xs text-gray-500 mt-1">
-                                            Formatos: PDF, JPG, PNG, DOC, DOCX.
-                                            Máximo: 10MB
-                                        </p>
-                                    </div>
-                                    <div v-else class="text-green-600">
-                                        <svg
-                                            class="mx-auto h-8 w-8"
-                                            fill="currentColor"
-                                            viewBox="0 0 20 20"
-                                        >
-                                            <path
-                                                fill-rule="evenodd"
-                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                clip-rule="evenodd"
-                                            />
-                                        </svg>
-                                        <p class="mt-1 text-sm font-medium">
-                                            {{ selectedFile.name }}
-                                        </p>
-                                        <p class="text-xs text-gray-500">
-                                            {{
-                                                formatFileSize(
-                                                    selectedFile.size
-                                                )
-                                            }}
-                                        </p>
-                                        <button
-                                            type="button"
-                                            @click="removeFile"
-                                            class="mt-1 text-xs text-red-600 hover:text-red-500"
-                                        >
-                                            Remover archivo
-                                        </button>
-                                    </div>
-                                </div>
-                                <div
-                                    v-if="documentForm.errors.archivo"
-                                    class="mt-2 text-sm text-red-600"
-                                >
-                                    {{ documentForm.errors.archivo }}
-                                </div>
-                            </div>
-                        </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">
+                            Fecha de revisión:
+                        </p>
+                        <p class="text-sm font-medium text-gray-900">
+                            {{ formatDate(selectedDocumento.fecha_revision) }}
+                        </p>
                     </div>
-
-                    <!-- Sección 3: Detalles Adicionales -->
-                    <div
-                        class="bg-white rounded-lg shadow-sm border border-gray-200"
-                    >
-                        <div class="border-b border-gray-200">
-                            <div class="flex items-center px-6 pt-6">
-                                <div
-                                    class="flex items-center justify-center w-8 h-8 bg-purple-600 rounded-full mr-3"
-                                >
-                                    <svg
-                                        class="w-4 h-4 text-white"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                        ></path>
-                                    </svg>
-                                </div>
-                                <h4 class="text-lg font-medium text-gray-900">
-                                    Detalles Adicionales
-                                </h4>
-                            </div>
-                            <div class="p-6">
-                                <!-- Observaciones -->
-                                <div class="mb-4">
-                                    <label
-                                        for="observaciones"
-                                        class="block text-sm font-medium text-gray-700 mb-2"
-                                    >
-                                        Observaciones
-                                    </label>
-                                    <textarea
-                                        id="observaciones"
-                                        v-model="documentForm.observaciones"
-                                        rows="3"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                        :class="{
-                                            'border-red-500 focus:ring-red-500 focus:border-red-500':
-                                                documentForm.errors
-                                                    .observaciones,
-                                        }"
-                                        placeholder="Ingrese observaciones adicionales..."
-                                    ></textarea>
-                                    <div
-                                        v-if="documentForm.errors.observaciones"
-                                        class="mt-2 text-sm text-red-600"
-                                    >
-                                        {{ documentForm.errors.observaciones }}
-                                    </div>
-                                </div>
-
-                                <!-- Documento Requerido -->
-                                <div class="flex items-center">
-                                    <input
-                                        id="es_requerido"
-                                        v-model="documentForm.es_requerido"
-                                        type="checkbox"
-                                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                    />
-                                    <label
-                                        for="es_requerido"
-                                        class="ml-2 block text-sm text-gray-700"
-                                    >
-                                        Documento requerido
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Botones -->
-                    <div class="flex justify-end space-x-3 pt-4">
-                        <button
-                            type="button"
-                            @click="closeModal"
-                            class="px-6 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            :disabled="documentForm.processing || !selectedFile"
-                            class="px-6 py-3 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            <span v-if="documentForm.processing"
-                                >Guardando...</span
-                            >
-                            <span v-else>Guardar Documento</span>
-                        </button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
 
@@ -1263,15 +1150,52 @@
 </template>
 
 <script setup>
+import DocumentoModal from "@/Components/DocumentoModal.vue";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Link, useForm, router } from "@inertiajs/vue3";
 import { ref } from "vue";
 
 const props = defineProps({
     productor: Object,
-    tiposDocumento: Object,
+    tiposDocumento: Array,
 });
+
+// Variables reactivas para el modal de documentos
 const showModal = ref(false);
+const selectedDocumento = ref(null);
+const modalMode = ref("create"); // Modos: 'create', 'edit', 'view'
+
+// Métodos para manejar el modal de documentos
+const openDocumentoModal = (documento = null) => {
+    selectedDocumento.value = documento;
+    modalMode.value = documento ? "edit" : "create";
+    showModal.value = true;
+    documentForm.reset();
+
+    if (documento) {
+        documentForm.nombre = documento.nombre;
+        documentForm.tipo_documento_id = documento.tipo_documento_id;
+        documentForm.observaciones = documento.observaciones;
+        documentForm.estado = documento.estado;
+        documentForm.fecha_entrega = documento.fecha_entrega;
+        documentForm.fecha_vencimiento = documento.fecha_vencimiento;
+    }
+};
+
+const openViewModal = (documento) => {
+    selectedDocumento.value = documento;
+    modalMode.value = "view";
+    showModal.value = true;
+};
+
+const closeModal = () => {
+    showModal.value = false;
+    selectedDocumento.value = null;
+};
+
+const refreshPage = () => {
+    router.reload();
+};
 const showCommunicationModal = ref(false);
 const activeTab = ref("documentos");
 const selectedFile = ref(null);
@@ -1300,33 +1224,40 @@ const comunicaciones = ref([
     },
 ]);
 
-// Datos de ejemplo para historial
-const historial = ref([
-    {
-        id: 1,
-        tipo: "documento",
-        descripcion: "Documento cargado",
-        detalles: "Se cargó el Contrato de Siembra",
-        usuario: "Juan Pérez",
-        created_at: "2024-01-15T09:15:00Z",
-    },
-    {
-        id: 2,
-        tipo: "comunicacion",
-        descripcion: "Comunicación enviada",
-        detalles: "Email enviado sobre documentación pendiente",
-        usuario: "Admin Sistema",
-        created_at: "2024-01-15T10:30:00Z",
-    },
-    {
-        id: 3,
-        tipo: "actualizacion",
-        descripcion: "Datos actualizados",
-        detalles: "Se actualizó la información de contacto",
-        usuario: "María García",
-        created_at: "2024-01-12T16:45:00Z",
-    },
-]);
+// Función para formatear la fecha
+const formatearFecha = (fecha) => {
+    return new Date(fecha).toLocaleString("es-AR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+};
+
+// Función para obtener el ícono según el tipo de cambio
+const obtenerIcono = (tipoCambio) => {
+    switch (tipoCambio) {
+        case "datos":
+            return "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z";
+        case "documento":
+            return "M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z";
+        default:
+            return "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z";
+    }
+};
+
+// Función para obtener el color según el tipo de cambio
+const obtenerColor = (tipoCambio) => {
+    switch (tipoCambio) {
+        case "datos":
+            return "bg-blue-500";
+        case "documento":
+            return "bg-green-500";
+        default:
+            return "bg-gray-500";
+    }
+};
 
 const documentForm = useForm({
     productor_id: props.productor.id,
@@ -1411,17 +1342,14 @@ const submitDocument = () => {
             console.log("Errores:", errors);
         },
     });
-};
-
-const closeModal = () => {
-    showModal.value = false;
     selectedFile.value = null;
     documentForm.reset();
     documentForm.clearErrors();
 };
 
-const downloadDocument = (documentoId) => {
-    window.open(route("documentos.download", documentoId), "_blank");
+const downloadDocument = (documento) => {
+    if (!documento || !documento.id) return;
+    window.location.href = route("documentos.download", documento.id);
 };
 
 const deleteDocument = (documentoId) => {
