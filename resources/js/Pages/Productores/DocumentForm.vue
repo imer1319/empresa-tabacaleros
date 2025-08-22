@@ -658,8 +658,8 @@ const form = useForm({
     archivo: null,
     observaciones: props.documento?.observaciones || "",
     estado: props.documento?.estado || "pendiente",
-    fecha_entrega: props.documento?.fecha_entrega || "",
-    fecha_vencimiento: props.documento?.fecha_vencimiento || "",
+    fecha_entrega: props.documento?.fecha_entrega?.split('T')[0] || "",
+    fecha_vencimiento: props.documento?.fecha_vencimiento?.split('T')[0] || "",
 });
 
 // Watch for documento changes
@@ -671,8 +671,8 @@ watch(
             form.tipo_documento_id = newDocumento.tipo_documento_id || "";
             form.observaciones = newDocumento.observaciones || "";
             form.estado = newDocumento.estado || "pendiente";
-            form.fecha_entrega = newDocumento.fecha_entrega || "";
-            form.fecha_vencimiento = newDocumento.fecha_vencimiento || "";
+            form.fecha_entrega = newDocumento.fecha_entrega?.split('T')[0] || "";
+            form.fecha_vencimiento = newDocumento.fecha_vencimiento?.split('T')[0] || "";
         }
     }
 );
@@ -739,6 +739,7 @@ const submitForm = () => {
             onSuccess: () => {
                 form.reset();
                 selectedFile.value = null;
+                emit("cancel");
                 emit("submitted");
                 router.reload();
             },
@@ -746,6 +747,7 @@ const submitForm = () => {
     } else {
         form.put(route("documentos.update", props.documento.id), {
             onSuccess: () => {
+                emit("cancel");
                 emit("submitted");
                 router.reload();
             },

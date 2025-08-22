@@ -210,7 +210,7 @@
                 @cancel="closeDocumentoModal"
             />
 
-            <DocumentShow v-else :documento="selectedDocumento" />
+            <DocumentShow v-else :documento="selectedDocumento" @close="closeDocumentoModal" />
         </Modal>
 
         <!-- Vista de documento individual -->
@@ -511,22 +511,24 @@ const getEstadoClass = (estado) => {
 const formatDate = (dateString) => {
     if (!dateString) return "No especificada";
     const date = new Date(dateString);
-    return date.toLocaleDateString("es-AR", {
+    const options = {
         year: "numeric",
         month: "long",
         day: "numeric",
-        timeZone: "America/Argentina/Buenos_Aires",
-    });
+        timeZone: "America/Argentina/Buenos_Aires"
+    };
+    return new Intl.DateTimeFormat('es-AR', options).format(date);
 };
 
 const formatDateOnly = (dateString) => {
     if (!dateString) return "No especificada";
     const date = new Date(dateString);
-    return date.toLocaleDateString("es-AR", {
+    const options = {
         year: "numeric",
         month: "long",
         day: "numeric",
-        timeZone: "America/Argentina/Buenos_Aires",
-    });
+        timeZone: "America/Argentina/Buenos_Aires"
+    };
+    return new Intl.DateTimeFormat('es-AR', options).format(date);
 };
 </script>

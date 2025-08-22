@@ -6,6 +6,17 @@
         v-else
         class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6"
     >
+        <!-- Botón de cerrar -->
+        <div class="flex justify-end mb-4">
+            <button
+                @click="$emit('close')"
+                class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+                <svg class="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
         <div class="flex items-center justify-between mb-6">
             <div class="flex items-center space-x-4">
                 <div
@@ -186,7 +197,9 @@
 </template>
 
 <script setup>
-import { defineProps } from "vue";
+import { defineProps, defineEmits } from "vue";
+
+const emit = defineEmits(['close']);
 
 const props = defineProps({
     documento: {

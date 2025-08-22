@@ -298,19 +298,6 @@
                                         }}
                                     </p>
                                 </div>
-                                <div>
-                                    <p class="text-sm text-gray-600 mb-1">
-                                        Archivo:
-                                    </p>
-                                    <p
-                                        class="text-sm font-medium text-gray-900"
-                                    >
-                                        {{
-                                            documento.archivo_nombre ||
-                                            "Sin archivo"
-                                        }}
-                                    </p>
-                                </div>
                             </div>
 
                             <!-- Observaciones -->

@@ -118,8 +118,8 @@ class DocumentoController extends Controller
 
         $documento->save();
 
-        // Asegurar que el estado esté incluido en los cambios
-        $cambios = $documento->only(['estado', 'fecha_entrega', 'fecha_vencimiento', 'fecha_revision', 'revisado_por']);
+        // Asegurar que el estado y otros campos significativos estén incluidos en los cambios
+        $cambios = $documento->only(['estado', 'fecha_entrega', 'fecha_vencimiento', 'fecha_revision', 'revisado_por', 'observaciones']);
         
         event(new DocumentoActualizado(
             $documento,
@@ -185,6 +185,9 @@ class DocumentoController extends Controller
             'fecha_vencimiento' => 'nullable|date'
         ]);
 
+        // Guardar valores anteriores antes de actualizar
+        $valoresAnteriores = $documento->getAttributes();
+
         $documento->fill($request->except('archivo'));
 
         // Manejar nuevo archivo si se subió
@@ -210,9 +213,6 @@ class DocumentoController extends Controller
             $documento->archivo_tamaño = $archivo->getSize();
         }
 
-        // Guardar valores anteriores antes de actualizar
-        $valoresAnteriores = $documento->getAttributes();
-
         // Actualizar fecha de revisión si se cambió el estado
         if ($request->filled('estado') && $documento->isDirty('estado')) {
             $documento->fecha_revision = now();
@@ -222,17 +222,18 @@ class DocumentoController extends Controller
         $documento->save();
 
         // Identificar cambios significativos
-        $cambios = array_diff_assoc(
-            $documento->only(['estado', 'fecha_entrega', 'fecha_vencimiento', 'fecha_revision', 'revisado_por']),
-            $valoresAnteriores
-        );
+        $campos = ['estado', 'fecha_entrega', 'fecha_vencimiento', 'fecha_revision', 'revisado_por', 'observaciones'];
+        $valoresNuevos = $documento->only($campos);
+        $valoresAnterioresSignificativos = array_intersect_key($valoresAnteriores, array_flip($campos));
+        
+        $cambios = array_diff_assoc($valoresNuevos, $valoresAnterioresSignificativos);
 
         // Disparar evento si hubo cambios significativos
         if (!empty($cambios)) {
             event(new DocumentoActualizado(
                 $documento,
                 $cambios,
-                $valoresAnteriores,
+                array_intersect_key($valoresAnteriores, array_flip($campos)),
                 Auth::id()
             ));
         }
