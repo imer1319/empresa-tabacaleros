@@ -31,9 +31,9 @@ const sidebarOpen = ref(false);
                         :href="route('dashboard')"
                         :class="[
                             route().current('dashboard')
-                                ? 'bg-blue-50 border-r-4 border-blue-500 text-blue-700'
+                                ? 'bg-green-500 text-white rounded-lg shadow-lg shadow-green-500/50'
                                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                            'group flex items-center px-2 py-2 text-sm font-medium rounded-l-md transition-colors duration-200',
+                            'group flex items-center px-2 py-4 text-sm font-medium transition-colors duration-200',
                         ]"
                     >
                         <svg
@@ -62,9 +62,9 @@ const sidebarOpen = ref(false);
                         :href="route('productores.index')"
                         :class="[
                             route().current('productores.*')
-                                ? 'bg-blue-50 border-r-4 border-blue-500 text-blue-700'
+                                ? 'bg-green-500 text-white rounded-lg shadow-lg shadow-green-500/50'
                                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                            'group flex items-center px-2 py-2 text-sm font-medium rounded-l-md transition-colors duration-200',
+                            'group flex items-center px-2 py-4 text-sm font-medium transition-colors duration-200',
                         ]"
                     >
                         <svg
@@ -95,9 +95,9 @@ const sidebarOpen = ref(false);
                                 :href="route('documentos.index')"
                                 :class="[
                                     route().current('documentos.*')
-                                        ? 'bg-blue-50 border-r-4 border-blue-500 text-blue-700'
+                                        ? 'bg-green-500 text-white rounded-lg shadow-lg shadow-green-500/50'
                                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                                    'group flex items-center px-2 py-2 text-sm font-medium rounded-l-md transition-colors duration-200',
+                                    'group flex items-center px-2 py-4 text-sm font-medium transition-colors duration-200',
                                 ]"
                             >
                                 <svg
@@ -119,9 +119,9 @@ const sidebarOpen = ref(false);
                                 :href="route('tipos-documento.index')"
                                 :class="[
                                     route().current('tipos-documento.*')
-                                        ? 'bg-blue-50 border-r-4 border-blue-500 text-blue-700'
+                                        ? 'bg-green-500 text-white rounded-lg shadow-lg shadow-green-500/50'
                                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                                    'group flex items-center px-2 py-2 text-sm font-medium rounded-l-md transition-colors duration-200',
+                                    'group flex items-center px-2 py-4 text-sm font-medium transition-colors duration-200',
                                 ]"
                             >
                                 <svg
@@ -160,13 +160,13 @@ const sidebarOpen = ref(false);
                                 :href="route('importacion.index')"
                                 :class="[
                                     route().current('importacion.*')
-                                        ? 'bg-blue-50 border-r-4 border-blue-500 text-blue-700'
+                                        ? 'bg-green-500 text-white rounded-lg shadow-lg shadow-green-500/50'
                                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                                    'group flex items-center px-2 py-2 text-sm font-medium rounded-l-md transition-colors duration-200',
+                                    'group flex items-center px-2 py-4 text-base font-medium',
                                 ]"
                             >
                                 <svg
-                                    class="mr-3 h-5 w-5"
+                                    class="mr-4 h-6 w-6"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -228,9 +228,9 @@ const sidebarOpen = ref(false);
                                 :href="route('dashboard')"
                                 :class="[
                                     route().current('dashboard')
-                                        ? 'bg-blue-50 text-blue-700'
-                                        : 'text-gray-600 hover:bg-gray-50',
-                                    'group flex items-center px-2 py-2 text-base font-medium rounded-md',
+                                        ? 'bg-green-500 text-white rounded-lg shadow-lg shadow-green-500/50'
+                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
+                                    'group flex items-center px-2 py-4 text-base font-medium',
                                 ]"
                             >
                                 <svg
@@ -252,9 +252,9 @@ const sidebarOpen = ref(false);
                                 :href="route('productores.index')"
                                 :class="[
                                     route().current('productores.*')
-                                        ? 'bg-blue-50 text-blue-700'
+                                        ? 'bg-green-50 text-green-700'
                                         : 'text-gray-600 hover:bg-gray-50',
-                                    'group flex items-center px-2 py-2 text-base font-medium rounded-md',
+                                    'group flex items-center px-2 py-4 text-base font-medium rounded-md',
                                 ]"
                             >
                                 <svg
