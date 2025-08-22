@@ -3,22 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Productor;
-use App\Models\Documento;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;
-use PhpOffice\PhpWord\PhpWord;
-use PhpOffice\PhpWord\IOFactory;
-use PhpOffice\PhpWord\TemplateProcessor;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
-use Dompdf\Dompdf;
-use Dompdf\Options;
-use PhpOffice\PhpWord\Writer\HTML as HTMLWriter;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\DocumentosPdf;
-use Exception;
+use Illuminate\Support\Facades\Validator;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use Inertia\Inertia;
 
 class ImportacionController extends Controller
 {
@@ -27,390 +16,108 @@ class ImportacionController extends Controller
         return Inertia::render('Importacion/Index');
     }
 
-    public function procesarExcel(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'archivo_excel' => 'required|file|mimes:xlsx,xls|max:10240',
-            'plantilla_word' => 'required|file|mimes:docx,doc|max:10240'
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        try {
-            // Procesar archivo Excel directamente desde el archivo temporal
-            $excelFile = $request->file('archivo_excel');
-            $spreadsheet = SpreadsheetIOFactory::load($excelFile->getPathname());
-            $worksheet = $spreadsheet->getActiveSheet();
-
-            $datos = [];
-            $filaInicio = 2; // Asumiendo que la fila 1 tiene encabezados
-
-            foreach ($worksheet->getRowIterator($filaInicio) as $row) {
-                $cellIterator = $row->getCellIterator();
-                $cellIterator->setIterateOnlyExistingCells(false);
-
-                $fila = [];
-                foreach ($cellIterator as $cell) {
-                    $fila[] = $cell->getValue();
-                }
-
-                // Verificar que la fila no esté vacía
-                if (!empty(array_filter($fila))) {
-                    $datos[] = [
-                        'fet_numero' => $fila[0] ?? '',
-                        'razon_social' => $fila[1] ?? '',
-                        'calle_dom_real' => $fila[2] ?? '',
-                        'localidad' => $fila[3] ?? '',
-                        'cuit' => $fila[4] ?? ''
-                    ];
-                }
-            }
-
-            // Guardar plantilla Word en sesión para uso posterior
-            $wordFile = $request->file('plantilla_word');
-            $wordContent = file_get_contents($wordFile->getPathname());
-            $request->session()->put('plantilla_word_content', base64_encode($wordContent));
-            $request->session()->put('plantilla_word_name', $wordFile->getClientOriginalName());
-
-            return response()->json([
-                'success' => true,
-                'datos' => $datos,
-                'message' => 'Archivo Excel procesado correctamente. Se encontraron ' . count($datos) . ' registros.'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al procesar el archivo: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
     public function importarProductores(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'datos' => 'required|array',
-            'datos.*.fet_numero' => 'required',
-            'datos.*.razon_social' => 'required|string|max:255',
-            'datos.*.calle_dom_real' => 'required|string|max:255',
-            'datos.*.localidad' => 'required|string|max:255',
-            'datos.*.cuit' => 'required|string|max:20'
+            'archivo' => 'required|file|mimes:xlsx,xls|max:5120'
+        ], [
+            'archivo.required' => 'Debe seleccionar un archivo Excel.',
+            'archivo.file' => 'El archivo debe ser un archivo válido.',
+            'archivo.mimes' => 'El archivo debe ser un archivo Excel (.xlsx, .xls).',
+            'archivo.max' => 'El archivo no debe pesar más de 5MB.'
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
         try {
-            $productoresCreados = 0;
+            $archivo = $request->file('archivo');
+            $spreadsheet = IOFactory::load($archivo);
+            $worksheet = $spreadsheet->getActiveSheet();
+            $data = $worksheet->toArray();
+
+            // Verificar encabezados
+            $encabezadosRequeridos = ['FET N°', 'Razon Social', 'Calle Dom Real', 'Localidad', 'CUIT'];
+            $encabezados = array_map('trim', $data[0]);
+            $encabezadosFaltantes = array_diff($encabezadosRequeridos, $encabezados);
+
+            if (!empty($encabezadosFaltantes)) {
+                return back()->withErrors([
+                    'archivo' => 'Faltan las siguientes columnas requeridas: ' . implode(', ', $encabezadosFaltantes)
+                ]);
+            }
+
+            // Mapear índices de columnas
+            $indices = array_flip($encabezados);
+
+            // Procesar datos
             $errores = [];
+            $totalFilas = count($data);
+            // Verificar que no haya filas vacías al final del archivo
+            while ($totalFilas > 0 && empty(array_filter($data[$totalFilas - 1]))) {
+                $totalFilas--;
+            }
+            $productoresCreados = 0;
 
-            foreach ($request->datos as $index => $dato) {
+            for ($i = 1; $i < $totalFilas; $i++) {
+                $fila = $data[$i];
+
+                // Verificar si la fila está vacía o si el CUIT está vacío
+                if (empty(array_filter($fila)) || empty(trim($fila[$indices['CUIT']]))) {
+                    Log::info("Fila " . ($i + 1) . ": Fila vacía o CUIT vacío");
+                    continue;
+                }
+
+                $cuit = trim($fila[$indices['CUIT']]);
+
+                // Validar CUIT
+                if (!preg_match('/^\d{11}$/', $cuit)) {
+                    $mensaje = "Fila " . ($i + 1) . ": El CUIT debe contener 11 dígitos. Cuit de productor: " . trim($fila[$indices['CUIT']]);
+                    Log::error($mensaje);
+                    $errores[] = $mensaje;
+                    continue;
+                }
+
+                // Verificar si el productor ya existe por CUIT o número de productor
+                $numeroProductor = trim($fila[$indices['FET N°']]);
+
+                // Si ya existe un productor con ese CUIT, simplemente pasamos al siguiente registro
+                if (Productor::where('cuit_cuil', $cuit)->exists()) {
+                    continue;
+                }
+
+                // Si ya existe un productor con ese número, simplemente pasamos al siguiente registro
+                if (Productor::where('numero_productor', $numeroProductor)->exists()) {
+                    continue;
+                }
+
                 try {
-                    // Verificar si ya existe un productor con el mismo CUIT
-                    $existente = Productor::where('cuit', $dato['cuit'])->first();
-
-                    if ($existente) {
-                        $errores[] = "Fila " . ($index + 1) . ": Ya existe un productor con CUIT " . $dato['cuit'];
-                        continue;
-                    }
-
                     Productor::create([
-                        'nombre' => $dato['razon_social'],
-                        'cuit' => $dato['cuit'],
-                        'direccion' => $dato['calle_dom_real'],
-                        'localidad' => $dato['localidad'],
-                        'telefono' => '',
-                        'email' => '',
-                        'estado' => 'activo',
-                        'observaciones' => 'Importado desde Excel - FET N°: ' . $dato['fet_numero']
+                        'numero_productor' => trim($fila[$indices['FET N°']]),
+                        'nombre_completo' => trim($fila[$indices['Razon Social']]),
+                        'direccion' => trim($fila[$indices['Calle Dom Real']]),
+                        'localidad' => trim($fila[$indices['Localidad']]),
+                        'cuit_cuil' => $cuit,
+                        'estado_documentacion' => 'En proceso'
                     ]);
-
                     $productoresCreados++;
                 } catch (\Exception $e) {
-                    $errores[] = "Fila " . ($index + 1) . ": " . $e->getMessage();
+                    $errores[] = "Fila " . ($i + 1) . ": Error al crear el productor - " . $e->getMessage();
                 }
             }
 
-            return response()->json([
-                'success' => true,
-                'productores_creados' => $productoresCreados,
-                'errores' => $errores,
-                'message' => "Importación completada. Se crearon {$productoresCreados} productores."
-            ]);
+            if (!empty($errores)) {
+                return back()->withErrors([
+                    'archivo' => $errores
+                ]);
+            }
+
+            return back()->with('success', "Se importaron {$productoresCreados} productores exitosamente.");
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error durante la importación: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function generarDocumentos(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'datos' => 'required|array',
-            'campos_reemplazo' => 'required|array'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        try {
-            // Log para depuración
-            Log::info('Datos recibidos para generar documentos:', [
-                'datos_count' => count($request->datos ?? []),
-                'campos_reemplazo' => $request->campos_reemplazo ?? [],
-                'primer_dato' => $request->datos[0] ?? null
+            return back()->withErrors([
+                'archivo' => 'Error al procesar el archivo: ' . $e->getMessage()
             ]);
-
-            // Verificar que la plantilla esté en sesión
-            $plantillaContent = $request->session()->get('plantilla_word_content');
-            $plantillaNombre = $request->session()->get('plantilla_word_name');
-
-            if (!$plantillaContent) {
-                throw new \Exception('No se encontró la plantilla Word en la sesión. Por favor, vuelva a cargar los archivos.');
-            }
-
-            $documentosGenerados = [];
-
-            // Crear archivo temporal para la plantilla
-            $tempPlantillaPath = tempnam(sys_get_temp_dir(), 'plantilla_') . '.docx';
-            file_put_contents($tempPlantillaPath, base64_decode($plantillaContent));
-
-            foreach ($request->datos as $index => $dato) {
-                // Crear una copia de la plantilla para cada registro
-                $templateProcessor = new TemplateProcessor($tempPlantillaPath);
-
-                // Reemplazar campos en el documento
-                foreach ($request->campos_reemplazo as $campo => $valorCampo) {
-                    $valor = $dato[$valorCampo] ?? '';
-                    // Log para depuración
-                    Log::info("Reemplazando campo: {$campo} con valor: {$valor} (campo origen: {$valorCampo})");
-                    $templateProcessor->setValue($campo, $valor);
-                }
-
-                // Generar nombre único para el archivo usando razón social
-                $razonSocialLimpia = preg_replace('/[^A-Za-z0-9_-]/', '_', $dato['razon_social'] ?? 'Sin_nombre');
-                $nombreArchivo = $razonSocialLimpia . '_' . time() . '.docx';
-                $rutaDestino = 'documentos/' . $nombreArchivo;
-
-                // Guardar el documento procesado en la misma ruta que los otros documentos
-                $templateProcessor->saveAs(storage_path('app/public/' . $rutaDestino));
-
-                // Buscar el productor por número de productor (FET N°)
-                $numeroProductor = $dato['fet_numero'] ?? null;
-                $productor = null;
-
-                // Log para depuración
-                Log::info("Buscando productor con número: {$numeroProductor}");
-                Log::info("Datos disponibles: " . json_encode(array_keys($dato)));
-
-                if ($numeroProductor) {
-                    $productor = Productor::where('numero_productor', $numeroProductor)->first();
-
-                    if ($productor) {
-                        Log::info("Productor encontrado: {$productor->nombre_completo}");
-                    } else {
-                        Log::warning("No se encontró productor con número exacto: {$numeroProductor}");
-
-                        // Intentar búsqueda alternativa
-                        $productor = Productor::where('numero_productor', 'like', "%{$numeroProductor}%")->first();
-
-                        if ($productor) {
-                            Log::info("Productor encontrado con búsqueda alternativa: {$productor->nombre_completo}");
-                        }
-                    }
-                }
-
-                // Registrar el documento en la base de datos si se encontró el productor
-                if ($productor) {
-                    try {
-                        Documento::create([
-                            'productor_id' => $productor->id,
-                            'nombre' => 'INTIMACION ANSES',
-                            'tipo_documento_id' => 19, // Intimación ANSES
-                            'estado' => 'entregado',
-                            'archivo_path' => $rutaDestino,
-                            'archivo_nombre' => $nombreArchivo,
-                            'archivo_tamaño' => filesize(storage_path('app/public/' . $rutaDestino)),
-                            'fecha_entrega' => now(),
-                            'es_requerido' => true,
-                            'observaciones' => 'Documento generado automáticamente durante la importación'
-                        ]);
-
-                        Log::info("Documento registrado en BD para productor: {$numeroProductor}");
-                    } catch (\Exception $e) {
-                        Log::error("Error al registrar documento en BD: " . $e->getMessage());
-                    }
-                } else {
-                    Log::warning("No se encontró productor con número: {$numeroProductor}");
-                }
-
-                $documentosGenerados[] = [
-                    'nombre' => $nombreArchivo,
-                    'ruta' => $rutaDestino,
-                    'productor' => $dato['razon_social'] ?? 'Sin nombre',
-                    'numero_productor' => $numeroProductor,
-                    'registrado_en_bd' => $productor ? true : false,
-                    'url' => route('importacion.descargar', ['archivo' => $nombreArchivo])
-                ];
-            }
-
-            // Limpiar archivo temporal de la plantilla
-            if (file_exists($tempPlantillaPath)) {
-                unlink($tempPlantillaPath);
-            }
-
-            // Limpiar datos de sesión
-            $request->session()->forget(['plantilla_word_content', 'plantilla_word_name']);
-
-            return response()->json([
-                'success' => true,
-                'documentos' => $documentosGenerados,
-                'message' => 'Se generaron ' . count($documentosGenerados) . ' documentos correctamente.'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al generar documentos: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function descargarDocumento($archivo)
-    {
-        $rutaArchivo = storage_path('app/public/documentos/' . $archivo);
-
-        if (!file_exists($rutaArchivo)) {
-            abort(404, 'Archivo no encontrado');
-        }
-
-        return response()->download($rutaArchivo);
-    }
-
-    public function generarPdfConsolidado(Request $request)
-    {
-        try {
-            // Obtener la lista de documentos generados desde la sesión o parámetros
-            $documentos = $request->input('documentos', []);
-
-            if (empty($documentos)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No hay documentos para consolidar'
-                ], 400);
-            }
-
-            // Configurar dompdf
-            $options = new Options();
-            $options->set('defaultFont', 'Arial');
-            $options->set('isRemoteEnabled', true);
-            $options->set('isHtml5ParserEnabled', true);
-
-            $dompdf = new Dompdf($options);
-
-            $htmlConsolidado = '<html><head><meta charset="UTF-8"><style>';
-            $htmlConsolidado .= 'body { font-family: Arial, sans-serif; margin: 1.5cm; padding: 0; line-height: 1.4; font-size: 14px; }';
-            $htmlConsolidado .= '.documento { margin: 0; padding: 0; }';
-            $htmlConsolidado .= '.separador { page-break-before: always; }';
-            $htmlConsolidado .= 'table { border-collapse: collapse; width: 100%; margin: 0; }';
-            $htmlConsolidado .= 'td, th { border: 1px solid #000; padding: 6px; text-align: left; font-size: 14px; }';
-            $htmlConsolidado .= 'p { margin: 10px 0; font-size: 14px; }';
-            $htmlConsolidado .= 'h1, h2, h3, h4, h5, h6 { margin: 12px 0; font-size: 16px; }';
-            $htmlConsolidado .= 'div img { display: table-cell; vertical-align:middle; text-align:center !important; max-width: 4cm !important; height: auto !important; }';
-            $htmlConsolidado .= 'div:has(img), p:has(img) { text-align: center !important; }';
-            $htmlConsolidado .= '.center, [align="center"] { text-align: center !important; }';
-            $htmlConsolidado .= '.right, [align="right"] { text-align: right !important; }';
-            $htmlConsolidado .= 'div[style*="text-align: center"], p[style*="text-align: center"] { text-align: center !important; }';
-            $htmlConsolidado .= '</style></head><body>';
-
-            $primerDocumento = true;
-
-            foreach ($documentos as $documento) {
-                $rutaDocumento = storage_path('app/public/' . $documento['ruta']);
-
-                if (!file_exists($rutaDocumento)) {
-                    continue;
-                }
-
-                try {
-                    // Cargar el documento Word
-                    $phpWord = IOFactory::load($rutaDocumento);
-
-                    // Convertir a HTML
-                    Log::info('Iniciando conversión a HTML');
-                    $htmlWriter = new HTMLWriter($phpWord);
-                    $htmlContent = $htmlWriter->getContent();
-                    Log::info('Conversión a HTML completada, longitud: ' . strlen($htmlContent));
-                    Log::info('HTML generado (primeros 500 caracteres): ' . substr($htmlContent, 0, 500));
-
-                    // Limpiar el HTML y extraer solo el contenido del body
-                    $dom = new \DOMDocument();
-                    @$dom->loadHTML($htmlContent, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-                    $body = $dom->getElementsByTagName('body')->item(0);
-
-                    if ($body) {
-                        $contenidoLimpio = '';
-                        foreach ($body->childNodes as $child) {
-                            $contenidoLimpio .= $dom->saveHTML($child);
-                        }
-                        Log::info('Contenido limpio extraído (primeros 300 caracteres): ' . substr($contenidoLimpio, 0, 300));
-                    } else {
-                        $contenidoLimpio = $htmlContent;
-                        Log::warning('No se encontró elemento body, usando HTML completo');
-                    }
-
-                    // Agregar separador de página si no es el primer documento
-                    if (!$primerDocumento) {
-                        $htmlConsolidado .= '<div class="separador"></div>';
-                    }
-
-                    // Agregar el contenido del documento sin título adicional
-                    $htmlConsolidado .= '<div class="documento">';
-                    $htmlConsolidado .= $contenidoLimpio;
-                    $htmlConsolidado .= '</div>';
-
-                    $primerDocumento = false;
-                } catch (\Exception $e) {
-                    Log::error('Error procesando documento: ' . $documento['nombre'], ['error' => $e->getMessage()]);
-                    continue;
-                }
-            }
-
-            $htmlConsolidado .= '</body></html>';
-
-            // Generar PDF
-            $dompdf->loadHtml($htmlConsolidado);
-            $dompdf->setPaper('A4', 'portrait');
-            $dompdf->render();
-
-            // Generar nombre del archivo
-            $nombreArchivo = 'documentos_consolidados_' . date('Y-m-d_H-i-s') . '.pdf';
-
-            // Retornar el PDF como descarga
-            return response($dompdf->output(), 200, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'attachment; filename="' . $nombreArchivo . '"',
-                'Cache-Control' => 'no-cache, no-store, must-revalidate',
-                'Pragma' => 'no-cache',
-                'Expires' => '0'
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Error generando PDF consolidado: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al generar PDF consolidado: ' . $e->getMessage()
-            ], 500);
         }
     }
 

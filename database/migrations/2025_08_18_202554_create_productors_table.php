@@ -18,9 +18,9 @@ return new class extends Migration
             $table->string('cuit_cuil')->unique();
             $table->string('telefono')->nullable();
             $table->string('email')->nullable();
-            $table->text('direccion');
-            $table->string('localidad');
-            $table->string('departamento');
+            $table->text('direccion')->nullable();
+            $table->string('localidad')->nullable();
+            $table->string('departamento')->nullable();
             $table->enum('estado_documentacion', ['En proceso', 'Aprobado', 'Faltante'])->default('En proceso');
             $table->timestamps();
         });

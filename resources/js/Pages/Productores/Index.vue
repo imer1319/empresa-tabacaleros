@@ -4,7 +4,70 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Gestión de Productores
             </h2>
-        </template>
+            <!-- Modal de Importación -->
+    <div v-if="modalImportacion" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Importar Productores desde Excel</h3>
+                <button @click="cerrarModalImportacion" class="text-gray-400 hover:text-gray-500">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="mb-4">
+                <p class="text-sm text-gray-600 mb-2">Seleccione un archivo Excel con el siguiente formato:</p>
+                <div class="bg-gray-50 p-3 rounded text-sm">
+                    <p class="font-medium">Columnas requeridas:</p>
+                    <ul class="list-disc list-inside text-gray-600 mt-1">
+                        <li>FET N°</li>
+                        <li>Razon Social</li>
+                        <li>Calle Dom Real</li>
+                        <li>Localidad</li>
+                        <li>CUIT</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Archivo Excel</label>
+                <input
+                    type="file"
+                    @change="manejarArchivo"
+                    accept=".xlsx,.xls"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+            </div>
+
+            <div v-if="erroresImportacion.length > 0" class="mb-4">
+                <div class="bg-red-50 border border-red-200 rounded-md p-3">
+                    <div class="text-sm text-red-600">
+                        <ul class="list-disc list-inside">
+                            <li v-for="error in erroresImportacion" :key="error">{{ error }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+                <button
+                    @click="cerrarModalImportacion"
+                    class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                    Cancelar
+                </button>
+                <button
+                    @click="importarExcel"
+                    :disabled="!form.archivo || form.processing"
+                    class="px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-medium text-sm text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {{ form.processing ? 'Importando...' : 'Importar' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</template>
 
         <div class="py-12">
             <div
@@ -12,42 +75,56 @@
             >
                 <div class="text-gray-900">
                     <!-- Barra de búsqueda y filtros -->
-                    <form :action="route('productores.index')" method="get" class="mb-6 flex flex-col sm:flex-row gap-4">
-                        <div class="flex-1">
-                            <input
-                                name="search"
-                                type="text"
-                                :value="filters.search"
-                                placeholder="Buscar por nombre, número de productor o CUIT..."
-                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                            />
+                    <div class="mb-6">
+                        <div class="flex justify-between items-start">
+                            <form :action="route('productores.index')" method="get" class="flex-1 flex flex-col sm:flex-row gap-4">
+                                <div class="flex-1">
+                                    <input
+                                        name="search"
+                                        type="text"
+                                        :value="filters.search"
+                                        placeholder="Buscar por nombre, número de productor o CUIT..."
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                    />
+                                </div>
+                                <div>
+                                    <select
+                                        name="estado"
+                                        class="px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                        :value="filters.estado"
+                                    >
+                                        <option value="">Todos los estados</option>
+                                        <option value="En proceso">En proceso</option>
+                                        <option value="Aprobado">Aprobado</option>
+                                        <option value="Faltante">Faltante</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                        Buscar
+                                    </button>
+                                </div>
+                            </form>
+                            <div class="flex space-x-2 ml-4">
+                                <button
+                                    type="button"
+                                    @click.prevent="abrirModalImportacion"
+                                    class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                >
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                    </svg>
+                                    Importar Excel
+                                </button>
+                                <Link
+                                    :href="route('productores.create')"
+                                    class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                >
+                                    Nuevo Productor
+                                </Link>
+                            </div>
                         </div>
-                        <div>
-                            <select
-                                name="estado"
-                                class="px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                :value="filters.estado"
-                            >
-                                <option value="">Todos los estados</option>
-                                <option value="En proceso">En proceso</option>
-                                <option value="Aprobado">Aprobado</option>
-                                <option value="Faltante">Faltante</option>
-                            </select>
-                        </div>
-                        <div>
-                            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                                Buscar
-                            </button>
-                        </div>
-                        <div>
-                            <Link
-                                :href="route('productores.create')"
-                                class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
-                            >
-                                Nuevo Productor
-                            </Link>
-                        </div>
-                    </form>
+                    </div>
 
                     <!-- Tabla de productores -->
                     <div class="overflow-x-auto">
@@ -262,43 +339,73 @@
     </AuthenticatedLayout>
 </template>
 
-<script>
+<script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Link } from "@inertiajs/vue3";
+import { ref } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 
-export default {
-    components: {
-        AuthenticatedLayout,
-        Link,
-    },
-    props: {
-        productores: Object,
-        filters: Object,
-    },
-    data() {
-        return {
-            search: this.filters.search || "",
-            estado: this.filters.estado || ""
-        };
-    },
-    methods: {
-        getEstadoClass(estado) {
-            switch (estado) {
-                case "Aprobado":
-                    return "bg-green-100 text-green-800";
-                case "En proceso":
-                    return "bg-yellow-100 text-yellow-800";
-                case "Faltante":
-                    return "bg-red-100 text-red-800";
-                default:
-                    return "bg-gray-100 text-gray-800";
-            }
-        },
-        confirmarEliminacion(event, nombreProductor) {
-            if (confirm(`¿Está seguro de eliminar al productor ${nombreProductor}?`)) {
-                event.target.submit();
-            }
-        },
-    },
+const modalImportacion = ref(false);
+const archivoExcel = ref(null);
+const erroresImportacion = ref([]);
+
+const form = useForm({
+    archivo: null
+});
+
+const abrirModalImportacion = () => {
+    modalImportacion.value = true;
 };
+
+const cerrarModalImportacion = () => {
+    modalImportacion.value = false;
+    form.reset();
+    erroresImportacion.value = [];
+};
+
+const manejarArchivo = (e) => {
+    const archivo = e.target.files[0];
+    form.archivo = archivo;
+};
+
+const importarExcel = () => {
+    form.post(route('productores.importar'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            cerrarModalImportacion();
+            window.location.reload();
+        },
+        onError: (errors) => {
+            if (Array.isArray(errors.archivo)) {
+                erroresImportacion.value = errors.archivo;
+            } else {
+                erroresImportacion.value = [errors.archivo];
+            }
+        }
+    });
+};
+
+const getEstadoClass = (estado) => {
+    switch (estado) {
+        case "Aprobado":
+            return "bg-green-100 text-green-800";
+        case "En proceso":
+            return "bg-yellow-100 text-yellow-800";
+        case "Faltante":
+            return "bg-red-100 text-red-800";
+        default:
+            return "bg-gray-100 text-gray-800";
+    }
+};
+
+const confirmarEliminacion = (event, nombreProductor) => {
+    if (confirm(`¿Está seguro de eliminar al productor ${nombreProductor}?`)) {
+        event.target.submit();
+    }
+};
+
+defineProps({
+    productores: Object,
+    filters: Object
+});
 </script>
