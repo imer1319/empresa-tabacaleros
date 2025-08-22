@@ -622,7 +622,7 @@
 
 <script setup>
 import { ref, watch } from "vue";
-import { useForm } from "@inertiajs/vue3";
+import { useForm, router } from "@inertiajs/vue3";
 
 const props = defineProps({
     productorId: {
@@ -740,12 +740,14 @@ const submitForm = () => {
                 form.reset();
                 selectedFile.value = null;
                 emit("submitted");
+                router.reload();
             },
         });
     } else {
         form.put(route("documentos.update", props.documento.id), {
             onSuccess: () => {
                 emit("submitted");
+                router.reload();
             },
         });
     }
