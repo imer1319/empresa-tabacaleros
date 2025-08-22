@@ -87,10 +87,10 @@ class DocumentoController extends Controller
             'productor_id' => 'required|exists:productors,id',
             'nombre' => 'required|string|max:255',
             'tipo_documento_id' => 'required|exists:tipo_documentos,id',
-            'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240', // 10MB max
+            'archivo' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240', // 10MB max
             'observaciones' => 'nullable|string',
             'es_requerido' => 'boolean',
-            'estado' => 'nullable|string|in:pendiente,entregado,aprobado,rechazado,vencido',
+            'estado' => 'required|string|in:pendiente,entregado,aprobado,rechazado,vencido',
             'fecha_entrega' => 'nullable|date',
             'fecha_revision' => 'nullable|date',
             'fecha_vencimiento' => 'nullable|date'
@@ -114,23 +114,16 @@ class DocumentoController extends Controller
             $documento->archivo_path = $rutaArchivo;
             $documento->archivo_nombre = $nombreArchivo;
             $documento->archivo_tamaño = $archivo->getSize();
-
-            // Si no se especificó estado y se subió archivo, marcar como entregado
-            if (!$request->estado) {
-                $documento->estado = 'entregado';
-            }
-        } else {
-            // Si no se especificó estado y no hay archivo, marcar como pendiente
-            if (!$request->estado) {
-                $documento->estado = 'pendiente';
-            }
         }
 
         $documento->save();
 
+        // Asegurar que el estado esté incluido en los cambios
+        $cambios = $documento->only(['estado', 'fecha_entrega', 'fecha_vencimiento', 'fecha_revision', 'revisado_por']);
+        
         event(new DocumentoActualizado(
             $documento,
-            $documento->getAttributes(),
+            $cambios,
             [],
             Auth::id()
         ));
@@ -140,11 +133,11 @@ class DocumentoController extends Controller
         $fromProductor = str_contains($referer, '/productores/');
         if ($fromProductor) {
             return redirect()->route('productores.show', $documento->productor_id)
-                ->with('success', 'Documento creado exitosamente.');
+                ->with('success', "Documento: {$documento->nombre}\nEstado: {$documento->estado}");
         }
 
         return redirect()->route('documentos.index')
-            ->with('success', 'Documento creado exitosamente.');
+            ->with('success', "Documento: {$documento->nombre}\nEstado: {$documento->estado}");
     }
 
     /**
@@ -249,11 +242,11 @@ class DocumentoController extends Controller
         $fromProductor = str_contains($referer, '/productores/');
         if ($fromProductor) {
             return redirect()->route('productores.show', $documento->productor_id)
-                ->with('success', 'Documento actualizado exitosamente.');
+                ->with('success', "Documento: {$documento->nombre}\nEstado: {$documento->estado}");
         }
 
         return redirect()->route('documentos.show', $documento)
-            ->with('success', 'Documento actualizado exitosamente.');
+            ->with('success', "Documento: {$documento->nombre}\nEstado: {$documento->estado}");
     }
 
     /**
@@ -279,7 +272,7 @@ class DocumentoController extends Controller
         ));
 
         return redirect()->route('documentos.index')
-            ->with('success', 'Documento eliminado exitosamente.');
+            ->with('success', "Documento: {$valoresAnteriores['nombre']}\nEstado anterior: {$valoresAnteriores['estado']}");
     }
 
     /**

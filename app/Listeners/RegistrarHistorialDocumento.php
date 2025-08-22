@@ -20,19 +20,19 @@ class RegistrarHistorialDocumento
 
         // Determinar el tipo de operación
         if (empty($event->valoresAnteriores)) {
-            $descripcion = 'Se creó el documento: ' . $event->documento->nombre;
+            $descripcion = 'Se creó el documento: ' . $event->documento->nombre . ' (Estado: ' . $event->documento->estado . ')';
             $cambiosSignificativos = array_intersect_key(
                 $event->cambios,
                 array_flip($campos)
             );
         } elseif (empty($event->cambios)) {
-            $descripcion = 'Se eliminó el documento: ' . $event->documento->nombre;
+            $descripcion = 'Se eliminó el documento: ' . $event->documento->nombre . ' (Estado anterior: ' . ($event->valoresAnteriores['estado'] ?? 'No especificado') . ')';
             $cambiosSignificativos = array_intersect_key(
                 $event->valoresAnteriores,
                 array_flip($campos)
             );
         } else {
-            $descripcion = 'Se actualizó el documento: ' . $event->documento->nombre;
+            $descripcion = 'Se actualizó el documento: ' . $event->documento->nombre . ' (Estado: ' . $event->documento->estado . ')';
         }
 
         $detalles = [
