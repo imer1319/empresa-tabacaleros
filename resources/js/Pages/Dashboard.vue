@@ -1,6 +1,29 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head } from "@inertiajs/vue3";
+
+defineProps({
+    estadisticas: {
+        type: Object,
+        required: true,
+        default: () => ({
+            totalProductores: 0,
+            documentosAprobados: 0,
+            documentosPendientes: 0,
+            comunicacionesEnviadas: 0
+        })
+    },
+    actividadesRecientes: {
+        type: Array,
+        required: true,
+        default: () => []
+    },
+    estadoDocumentos: {
+        type: Object,
+        required: true,
+        default: () => ({})
+    }
+});
 </script>
 
 <template>
@@ -15,7 +38,7 @@ import { Head } from "@inertiajs/vue3";
 
         <div class="py-6">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <!-- Tarjetas de estadísticas -->
+                <!-- Estadísticas Generales -->
                 <div
                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
                 >
@@ -45,13 +68,13 @@ import { Head } from "@inertiajs/vue3";
                             </div>
                             <div class="ml-4">
                                 <p class="text-2xl font-bold text-gray-900">
-                                    247
+                                    {{ estadisticas.totalProductores }}
                                 </p>
                                 <p class="text-sm text-gray-600">
                                     Total Productores
                                 </p>
                                 <p class="text-xs text-green-600 mt-1">
-                                    +12 este mes
+                                    +{{ estadisticas.nuevosProductoresMes }} este mes
                                 </p>
                             </div>
                         </div>
@@ -83,13 +106,13 @@ import { Head } from "@inertiajs/vue3";
                             </div>
                             <div class="ml-4">
                                 <p class="text-2xl font-bold text-gray-900">
-                                    1,834
+                                    {{ estadisticas.documentosAprobados }}
                                 </p>
                                 <p class="text-sm text-gray-600">
                                     Documentos Aprobados
                                 </p>
                                 <p class="text-xs text-green-600 mt-1">
-                                    +89 esta semana
+                                    +{{ estadisticas.documentosAprobadosSemana }} esta semana
                                 </p>
                             </div>
                         </div>
@@ -121,13 +144,13 @@ import { Head } from "@inertiajs/vue3";
                             </div>
                             <div class="ml-4">
                                 <p class="text-2xl font-bold text-gray-900">
-                                    18
+                                    {{ estadisticas.documentosPendientes }}
                                 </p>
                                 <p class="text-sm text-gray-600">
                                     Documentos Pendientes
                                 </p>
                                 <p class="text-xs text-red-600 mt-1">
-                                    -5 desde ayer
+                                    -{{ estadisticas.documentosPendientesAyer }} desde ayer
                                 </p>
                             </div>
                         </div>
@@ -159,13 +182,13 @@ import { Head } from "@inertiajs/vue3";
                             </div>
                             <div class="ml-4">
                                 <p class="text-2xl font-bold text-gray-900">
-                                    156
+                                    {{ estadisticas.comunicacionesEnviadas }}
                                 </p>
                                 <p class="text-sm text-gray-600">
                                     Comunicaciones Enviadas
                                 </p>
                                 <p class="text-xs text-green-600 mt-1">
-                                    +23 hoy
+                                    +{{ estadisticas.comunicacionesEnviadasHoy }} hoy
                                 </p>
                             </div>
                         </div>
@@ -201,121 +224,53 @@ import { Head } from "@inertiajs/vue3";
                             </div>
                             <div class="p-6">
                                 <div class="space-y-4">
-                                    <!-- Actividad 1 -->
-                                    <div class="flex items-start space-x-3">
-                                        <div class="flex-shrink-0">
+                                    <template v-for="actividad in actividadesRecientes" :key="actividad.id">
+                                        <div class="flex items-start">
                                             <div
-                                                class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center"
+                                                :class="{
+                                                    'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center': true,
+                                                    'bg-green-100': actividad.tipo === 'aprobado',
+                                                    'bg-red-100': actividad.tipo === 'rechazado',
+                                                    'bg-yellow-100': actividad.tipo === 'vencimiento',
+                                                    'bg-blue-100': actividad.tipo === 'comunicacion'
+                                                }"
                                             >
                                                 <svg
-                                                    class="w-4 h-4 text-green-600"
+                                                    :class="{
+                                                        'w-5 h-5': true,
+                                                        'text-green-600': actividad.tipo === 'aprobado',
+                                                        'text-red-600': actividad.tipo === 'rechazado',
+                                                        'text-yellow-600': actividad.tipo === 'vencimiento',
+                                                        'text-blue-600': actividad.tipo === 'comunicacion'
+                                                    }"
                                                     fill="none"
                                                     stroke="currentColor"
                                                     viewBox="0 0 24 24"
+                                                    xmlns="http://www.w3.org/2000/svg"
                                                 >
                                                     <path
+                                                        v-if="actividad.tipo === 'aprobado'"
                                                         stroke-linecap="round"
                                                         stroke-linejoin="round"
                                                         stroke-width="2"
                                                         d="M5 13l4 4L19 7"
                                                     ></path>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm text-gray-900">
-                                                Documento "Contrato de Siembra"
-                                                aprobado para Juan Pérez
-                                            </p>
-                                            <p
-                                                class="text-xs text-gray-500 mt-1"
-                                            >
-                                                Hace 15 min
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Actividad 2 -->
-                                    <div class="flex items-start space-x-3">
-                                        <div class="flex-shrink-0">
-                                            <div
-                                                class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center"
-                                            >
-                                                <svg
-                                                    class="w-4 h-4 text-blue-600"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
                                                     <path
+                                                        v-else-if="actividad.tipo === 'notificacion'"
                                                         stroke-linecap="round"
                                                         stroke-linejoin="round"
                                                         stroke-width="2"
                                                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                                                     ></path>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm text-gray-900">
-                                                Notificación masiva enviada a 45
-                                                productores
-                                            </p>
-                                            <p
-                                                class="text-xs text-gray-500 mt-1"
-                                            >
-                                                Hace 1 hora
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Actividad 3 -->
-                                    <div class="flex items-start space-x-3">
-                                        <div class="flex-shrink-0">
-                                            <div
-                                                class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center"
-                                            >
-                                                <svg
-                                                    class="w-4 h-4 text-green-600"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
                                                     <path
+                                                        v-else-if="actividad.tipo === 'registro'"
                                                         stroke-linecap="round"
                                                         stroke-linejoin="round"
                                                         stroke-width="2"
                                                         d="M5 13l4 4L19 7"
                                                     ></path>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm text-gray-900">
-                                                Nuevo productor registrado:
-                                                María García
-                                            </p>
-                                            <p
-                                                class="text-xs text-gray-500 mt-1"
-                                            >
-                                                Hace 2 horas
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Actividad 4 -->
-                                    <div class="flex items-start space-x-3">
-                                        <div class="flex-shrink-0">
-                                            <div
-                                                class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center"
-                                            >
-                                                <svg
-                                                    class="w-4 h-4 text-orange-600"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
                                                     <path
+                                                        v-else
                                                         stroke-linecap="round"
                                                         stroke-linejoin="round"
                                                         stroke-width="2"
@@ -323,19 +278,18 @@ import { Head } from "@inertiajs/vue3";
                                                     ></path>
                                                 </svg>
                                             </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm text-gray-900">
+                                                    {{ actividad.descripcion }}
+                                                </p>
+                                                <p
+                                                    class="text-xs text-gray-500 mt-1"
+                                                >
+                                                    {{ actividad.tiempo }}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm text-gray-900">
-                                                Documento faltante detectado
-                                                para Carlos López
-                                            </p>
-                                            <p
-                                                class="text-xs text-gray-500 mt-1"
-                                            >
-                                                Hace 3 horas
-                                            </p>
-                                        </div>
-                                    </div>
+                                    </template>
                                 </div>
                             </div>
                         </div>
@@ -368,17 +322,17 @@ import { Head } from "@inertiajs/vue3";
                             </div>
                             <div class="p-6">
                                 <div class="space-y-6">
-                                    <!-- Contratos de Siembra -->
+                                    <template v-for="(estadisticas, tipo) in estadoDocumentos" :key="tipo">
                                     <div>
                                         <div
                                             class="flex items-center justify-between mb-2"
                                         >
                                             <span
                                                 class="text-sm font-medium text-gray-900"
-                                                >Contratos de Siembra</span
+                                                >{{ tipo }}</span
                                             >
                                             <span class="text-sm text-gray-600"
-                                                >235/247</span
+                                                >{{ estadisticas.completados }}/{{ estadisticas.total }}</span
                                             >
                                         </div>
                                         <div
@@ -386,123 +340,22 @@ import { Head } from "@inertiajs/vue3";
                                         >
                                             <div
                                                 class="bg-green-600 h-2 rounded-full"
-                                                style="width: 95%"
+                                                :style="{ width: estadisticas.porcentaje + '%' }"
                                             ></div>
                                         </div>
                                         <div
                                             class="flex items-center justify-between mt-1"
                                         >
                                             <span class="text-xs text-green-600"
-                                                >95% completado</span
+                                                >{{ estadisticas.porcentaje }}% completado</span
                                             >
                                             <span
                                                 class="text-xs text-orange-600"
-                                                >12 pendientes</span
+                                                >{{ estadisticas.pendientes }} pendientes</span
                                             >
                                         </div>
                                     </div>
-
-                                    <!-- Certificados AFIP -->
-                                    <div>
-                                        <div
-                                            class="flex items-center justify-between mb-2"
-                                        >
-                                            <span
-                                                class="text-sm font-medium text-gray-900"
-                                                >Certificados AFIP</span
-                                            >
-                                            <span class="text-sm text-gray-600"
-                                                >241/247</span
-                                            >
-                                        </div>
-                                        <div
-                                            class="w-full bg-gray-200 rounded-full h-2"
-                                        >
-                                            <div
-                                                class="bg-green-600 h-2 rounded-full"
-                                                style="width: 98%"
-                                            ></div>
-                                        </div>
-                                        <div
-                                            class="flex items-center justify-between mt-1"
-                                        >
-                                            <span class="text-xs text-green-600"
-                                                >98% completado</span
-                                            >
-                                            <span
-                                                class="text-xs text-orange-600"
-                                                >6 pendientes</span
-                                            >
-                                        </div>
-                                    </div>
-
-                                    <!-- Licencias Municipales -->
-                                    <div>
-                                        <div
-                                            class="flex items-center justify-between mb-2"
-                                        >
-                                            <span
-                                                class="text-sm font-medium text-gray-900"
-                                                >Licencias Municipales</span
-                                            >
-                                            <span class="text-sm text-gray-600"
-                                                >229/247</span
-                                            >
-                                        </div>
-                                        <div
-                                            class="w-full bg-gray-200 rounded-full h-2"
-                                        >
-                                            <div
-                                                class="bg-green-600 h-2 rounded-full"
-                                                style="width: 93%"
-                                            ></div>
-                                        </div>
-                                        <div
-                                            class="flex items-center justify-between mt-1"
-                                        >
-                                            <span class="text-xs text-green-600"
-                                                >93% completado</span
-                                            >
-                                            <span
-                                                class="text-xs text-orange-600"
-                                                >18 pendientes</span
-                                            >
-                                        </div>
-                                    </div>
-
-                                    <!-- Seguros Agrícolas -->
-                                    <div>
-                                        <div
-                                            class="flex items-center justify-between mb-2"
-                                        >
-                                            <span
-                                                class="text-sm font-medium text-gray-900"
-                                                >Seguros Agrícolas</span
-                                            >
-                                            <span class="text-sm text-gray-600"
-                                                >244/247</span
-                                            >
-                                        </div>
-                                        <div
-                                            class="w-full bg-gray-200 rounded-full h-2"
-                                        >
-                                            <div
-                                                class="bg-green-600 h-2 rounded-full"
-                                                style="width: 99%"
-                                            ></div>
-                                        </div>
-                                        <div
-                                            class="flex items-center justify-between mt-1"
-                                        >
-                                            <span class="text-xs text-green-600"
-                                                >99% completado</span
-                                            >
-                                            <span
-                                                class="text-xs text-orange-600"
-                                                >3 pendientes</span
-                                            >
-                                        </div>
-                                    </div>
+                                </template>
                                 </div>
                             </div>
                         </div>
