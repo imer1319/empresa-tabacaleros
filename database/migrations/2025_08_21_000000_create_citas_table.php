@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('productor_id')->constrained()->onDelete('cascade');
             $table->text('descripcion');
-            $table->date('fecha_visita');
+            $table->date('fecha_visita')->nullable();
             $table->date('fecha_proxima_cita')->nullable();
             $table->enum('estado', ['pendiente', 'asistio', 'no_asistio'])->default('pendiente');
             $table->timestamps();

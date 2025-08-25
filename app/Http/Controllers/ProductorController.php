@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\ProductorActualizado;
 use App\Models\Productor;
 use App\Models\TipoDocumento;
 use Illuminate\Http\Request;
@@ -68,13 +67,6 @@ class ProductorController extends Controller
 
         $productor = Productor::create($validated);
 
-        event(new ProductorActualizado(
-            $productor,
-            $validated,
-            [],
-            Auth::id()
-        ));
-
         return redirect()->route('productores.index')
             ->with('success', 'Productor creado exitosamente.');
     }
@@ -88,7 +80,7 @@ class ProductorController extends Controller
         $productore->load([
             'documentos.tipoDocumento',
             'historial' => function ($query) {
-                $query->with('usuario')->latest();
+                $query->with('usuario')->orderBy('created_at', 'desc');
             },
             'citas' => function ($query) {
                 $query->with('productor')->latest();
@@ -97,9 +89,7 @@ class ProductorController extends Controller
 
         return Inertia::render('Productores/Show', [
             'productor' => $productore,
-            'tiposDocumento' => $tiposDocumento,
-            'citas' => $productore->citas,
-
+            'tiposDocumento' => $tiposDocumento
         ]);
     }
 
@@ -130,24 +120,7 @@ class ProductorController extends Controller
             'estado_documentacion' => 'required|in:En proceso,Aprobado,Faltante'
         ]);
 
-        // Obtener los valores actuales antes de la actualización
-        $valoresAnteriores = $productore->getAttributes();
-        // Identificar solo los campos que realmente cambiaron
-        $cambios = array_filter($validated, function ($valor, $campo) use ($valoresAnteriores) {
-            return (!isset($valoresAnteriores[$campo]) && $valor !== null) ||
-                (isset($valoresAnteriores[$campo]) && $valor !== $valoresAnteriores[$campo]);
-        }, ARRAY_FILTER_USE_BOTH);
-
-        if (!empty($cambios)) {
-            $productore->update($validated);
-
-            event(new ProductorActualizado(
-                $productore,
-                $cambios,
-                $valoresAnteriores,
-                Auth::id()
-            ));
-        }
+        $productore->update($validated);
 
         return redirect()->route('productores.index')
             ->with('success', 'Productor actualizado exitosamente.');
@@ -158,15 +131,7 @@ class ProductorController extends Controller
      */
     public function destroy(Productor $productore)
     {
-        $valoresAnteriores = $productore->getAttributes();
         $productore->delete();
-
-        event(new ProductorActualizado(
-            $productore,
-            [],
-            $valoresAnteriores,
-            Auth::id()
-        ));
 
         return redirect()->route('productores.index')
             ->with('success', 'Productor eliminado exitosamente.');

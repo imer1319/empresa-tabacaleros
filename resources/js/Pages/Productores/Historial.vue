@@ -9,126 +9,115 @@
             </p>
         </div>
 
-        <div v-if="historial && historial.length > 0" class="flow-root">
-            <ul class="-mb-8">
-                <li
-                    v-for="(actividad, index) in historial"
-                    :key="actividad.id"
-                    class="relative pb-8"
-                >
+        <div class="bg-white shadow-sm rounded-lg divide-y divide-gray-200">
+            <div
+                v-for="cambio in historial"
+                :key="cambio.id"
+                class="p-4 hover:bg-gray-50 transition-colors duration-200 grid grid-cols-[50px_1fr] gap-4"
+            >
+                <!-- Columna izquierda (ícono) -->
+                <div class="flex items-start justify-center">
+                    <!-- Íconos -->
+                    <svg
+                        v-if="cambio.modelo_type.includes('Productor')"
+                        class="w-8 h-8 text-blue-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                    </svg>
+
+                    <svg
+                        v-else-if="cambio.modelo_type.includes('Cita')"
+                        class="w-8 h-8 text-green-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                    </svg>
+
+                    <svg
+                        v-else-if="cambio.modelo_type.includes('Documento')"
+                        class="w-8 h-8 text-yellow-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                    </svg>
+                </div>
+
+                <!-- Columna derecha (contenido) -->
+                <div>
+                    <!-- Tipo de acción -->
+                    <h4 class="text-sm font-semibold text-gray-900 mb-1">
+                        {{ obtenerTituloAccion(cambio) }}
+                    </h4>
+
+                    <!-- Mensaje -->
+                    <p
+                        class="text-sm mb-2"
+                        :class="{
+                            'text-green-600':
+                                cambio.tipo_operacion === 'creacion',
+                            'text-red-600':
+                                cambio.tipo_operacion === 'eliminacion',
+                            'text-gray-700':
+                                cambio.tipo_operacion === 'actualizacion',
+                        }"
+                    >
+                        {{ obtenerMensaje(cambio) }}
+                    </p>
+
+                    <!-- Cambios en actualizaciones -->
                     <div
-                        v-if="index !== historial.length - 1"
-                        class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
-                        aria-hidden="true"
-                    ></div>
-                    <div class="relative flex space-x-3">
-                        <div>
-                            <span
-                                :class="[
-                                    'h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white',
-                                    obtenerColor(actividad.tipo_cambio),
-                                ]"
+                        v-if="
+                            cambio.tipo_operacion === 'actualizacion' &&
+                            cambio.cambios
+                        "
+                        class="mb-2 text-sm text-gray-600"
+                    >
+                        <template
+                            v-for="(valor, campo) in cambio.cambios"
+                            :key="campo"
+                        >
+                            <span class="font-medium"
+                                >{{ formatoTexto(campo) }}:</span
                             >
-                                <svg
-                                    class="h-5 w-5 text-white"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                    aria-hidden="true"
-                                    version="1.1"
-                                >
-                                    <path
-                                        :d="obtenerIcono(actividad.tipo_cambio)"
-                                    />
-                                </svg>
-                            </span>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <div>
-                                <div class="text-sm">
-                                    <span class="font-medium text-gray-900">
-                                        {{
-                                            actividad.usuario?.name || "Sistema"
-                                        }}
-                                    </span>
-                                </div>
-                                <p class="mt-0.5 text-sm text-gray-500">
-                                    {{ formatearFecha(actividad.created_at) }}
-                                </p>
-                            </div>
-                            <div class="mt-2 text-sm text-gray-700">
-                                <p>{{ actividad.descripcion }}</p>
-                                <div v-if="actividad.detalles" class="mt-2">
-                                    <template
-                                        v-if="actividad.tipo_cambio === 'datos'"
-                                    >
-                                        <div
-                                            v-for="(
-                                                cambio, campo
-                                            ) in actividad.detalles"
-                                            :key="campo"
-                                            class="mt-1 text-sm"
-                                        >
-                                            <span class="font-medium"
-                                                >{{ campo }}:</span
-                                            >
-                                            <span
-                                                class="text-red-500 line-through mr-2"
-                                                >{{
-                                                    cambio.anterior ||
-                                                    "No especificado"
-                                                }}</span
-                                            >
-                                            <span
-                                                class="text-green-600 font-medium"
-                                                >→</span
-                                            >
-                                            <span class="text-green-600 ml-2">{{
-                                                cambio.nuevo ||
-                                                "No especificado"
-                                            }}</span>
-                                        </div>
-                                    </template>
-                                    <template
-                                        v-else-if="
-                                            actividad.tipo_cambio ===
-                                            'documento'
-                                        "
-                                    >
-                                        <div class="mt-2 text-sm text-gray-600">
-                                            <p>
-                                                <span class="font-medium"
-                                                    >Documento:</span
-                                                >
-                                                {{ actividad.detalles.nombre }}
-                                            </p>
-                                            <p
-                                                v-if="
-                                                    actividad.detalles
-                                                        .observaciones
-                                                "
-                                            >
-                                                <span class="font-medium"
-                                                    >Observaciones:</span
-                                                >
-                                                {{
-                                                    actividad.detalles
-                                                        .observaciones
-                                                }}
-                                            </p>
-                                        </div>
-                                    </template>
-                                </div>
-                            </div>
-                        </div>
+                            <span class="text-red-500 line-through mr-1">{{
+                                obtenerValorFormateado(valor.anterior, campo)
+                            }}</span>
+                            <span class="text-green-500 mr-3">{{
+                                obtenerValorFormateado(valor.nuevo, campo)
+                            }}</span>
+                        </template>
                     </div>
-                </li>
-            </ul>
-        </div>
-        <div v-else class="text-center py-8">
-            <p class="text-gray-500">
-                No hay actividades registradas para este productor.
-            </p>
+
+                    <!-- Metadatos -->
+                    <div class="text-xs text-gray-500">
+                        Por {{ cambio.usuario?.name || "Sistema" }} •
+                        Actualizado:
+                        {{ formatearFecha(cambio.updated_at) }}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -143,38 +132,112 @@ const props = defineProps({
     },
 });
 
-// Función para formatear la fecha
-const formatearFecha = (fecha) => {
-    return new Date(fecha).toLocaleString("es-AR", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-    });
+const formatearFecha = (fecha, soloFecha = false) => {
+    if (!fecha) return "No definido";
+
+    // Si el formato es tipo "YYYY-MM-DD", lo trato como fecha plana
+    if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+        const [y, m, d] = fecha.split("-");
+        const opciones = { year: "numeric", month: "short", day: "numeric" };
+        return new Date(y, m - 1, d).toLocaleDateString("es-ES", opciones);
+    }
+
+    // Para los demás casos (datetime con hora)
+    const opciones = soloFecha
+        ? { year: "numeric", month: "short", day: "numeric" }
+        : {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+          };
+
+    return new Date(fecha).toLocaleDateString("es-ES", opciones);
 };
 
-// Función para obtener el ícono según el tipo de cambio
-const obtenerIcono = (tipoCambio) => {
-    switch (tipoCambio) {
-        case "datos":
-            return "M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z";
-        case "documento":
-            return "M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z";
-        default:
-            return "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z";
-    }
+const formatoTexto = (texto) => {
+    if (!texto) return "";
+    return texto
+        .replace(/_/g, " ")
+        .replace(/([A-Z])/g, " $1")
+        .replace(/^./, (str) => str.toUpperCase());
 };
 
-// Función para obtener el color según el tipo de cambio
-const obtenerColor = (tipoCambio) => {
-    switch (tipoCambio) {
-        case "datos":
-            return "bg-blue-500";
-        case "documento":
-            return "bg-green-500";
-        default:
-            return "bg-gray-500";
+const obtenerValorFormateado = (valor, campo) => {
+    if (valor === null || valor === undefined) return "No definido";
+    if (
+        campo.includes("fecha") ||
+        campo === "created_at" ||
+        campo === "updated_at"
+    ) {
+        return formatearFecha(valor);
     }
+    return valor;
+};
+
+const obtenerTituloAccion = (cambio) => {
+    if (cambio.tipo_operacion === "creacion") return "Creación";
+    if (cambio.tipo_operacion === "eliminacion") return "Eliminación";
+    return "Actualización";
+};
+
+const obtenerMensaje = (cambio) => {
+    if (cambio.tipo_operacion === "creacion") {
+        if (cambio.modelo_type.includes("Cita")) {
+            return `Cita creada: ${cambio.despues.descripcion} - Estado: ${
+                cambio.despues.estado
+            } - Próxima visita: ${formatearFecha(
+                cambio.despues.fecha_proxima_cita,
+                true
+            )}`;
+        }
+        if (cambio.modelo_type.includes("Productor")) {
+            return `Se creó el productor Nº ${cambio.despues.numero} - ${cambio.despues.nombre} ${cambio.despues.apellido} - CUIT: ${cambio.despues.cuit}`;
+        }
+        if (cambio.modelo_type.includes("Documento")) {
+            return `Documento: ${
+                cambio.despues.nombre
+            } creado - Entrega: ${formatearFecha(
+                cambio.despues.fecha_entrega,
+                true
+            )} - Vencimiento: ${formatearFecha(
+                cambio.despues.fecha_vencimiento,
+                true
+            )} - Estado: ${cambio.despues.estado}`;
+        }
+        return "Se creó correctamente.";
+    }
+
+    if (cambio.tipo_operacion === "eliminacion") {
+        if (cambio.modelo_type.includes("Cita")) {
+            return `Cita eliminada:  Descripcion: ${
+                cambio.antes.descripcion
+            } - Estado: ${cambio.antes.estado} - Fecha visita: ${formatearFecha(
+                cambio.antes.fecha_visita,
+                true
+            )} - Próxima visita: ${formatearFecha(
+                cambio.antes.fecha_proxima_cita,
+                true
+            )}`;
+        }
+        if (cambio.modelo_type.includes("Productor")) {
+            return `Productor eliminado: Nº ${cambio.antes.numero} - ${cambio.antes.nombre} ${cambio.antes.apellido} - CUIT: ${cambio.antes.cuit}`;
+        }
+        if (cambio.modelo_type.includes("Documento")) {
+            return `Documento eliminado: ${
+                cambio.antes.nombre
+            } - Entrega: ${formatearFecha(
+                cambio.antes.fecha_entrega,
+                true
+            )} - Vencimiento: ${formatearFecha(
+                cambio.antes.fecha_vencimiento,
+                true
+            )} - Estado: ${cambio.antes.estado}`;
+        }
+        return `${formatoTexto(cambio.modelo_type)} eliminado correctamente.`;
+    }
+
+    return "Se realizaron cambios en este registro.";
 };
 </script>

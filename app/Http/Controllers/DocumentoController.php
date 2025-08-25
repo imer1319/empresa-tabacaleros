@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\DocumentoActualizado;
+use App\Http\Requests\StoreDocumentoRequest;
+use App\Http\Requests\UpdateDocumentoRequest;
 use App\Models\Documento;
 use App\Models\Productor;
 use App\Models\TipoDocumento;
@@ -81,22 +82,11 @@ class DocumentoController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreDocumentoRequest $request)
     {
-        $request->validate([
-            'productor_id' => 'required|exists:productors,id',
-            'nombre' => 'required|string|max:255',
-            'tipo_documento_id' => 'required|exists:tipo_documentos,id',
-            'archivo' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240', // 10MB max
-            'observaciones' => 'nullable|string',
-            'es_requerido' => 'boolean',
-            'estado' => 'required|string|in:pendiente,entregado,aprobado,rechazado,vencido',
-            'fecha_entrega' => 'nullable|date',
-            'fecha_revision' => 'nullable|date',
-            'fecha_vencimiento' => 'nullable|date'
-        ]);
+        $validated = $request->validated();
 
-        $documento = new Documento($request->except('archivo'));
+        $documento = new Documento($validated);
 
         // Manejar archivo si se subió
         if ($request->hasFile('archivo')) {
@@ -117,16 +107,6 @@ class DocumentoController extends Controller
         }
 
         $documento->save();
-
-        // Asegurar que el estado y otros campos significativos estén incluidos en los cambios
-        $cambios = $documento->only(['estado', 'fecha_entrega', 'fecha_vencimiento', 'fecha_revision', 'revisado_por', 'observaciones']);
-        
-        event(new DocumentoActualizado(
-            $documento,
-            $cambios,
-            [],
-            Auth::id()
-        ));
 
         // Verificar si la petición viene de la vista del productor
         $referer = request()->headers->get('referer');
@@ -171,24 +151,11 @@ class DocumentoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Documento $documento)
+    public function update(UpdateDocumentoRequest $request, Documento $documento)
     {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'tipo_documento_id' => 'required|exists:tipo_documentos,id',
-            'estado' => 'required|in:pendiente,entregado,aprobado,rechazado,vencido',
-            'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240',
-            'observaciones' => 'nullable|string',
-            'es_requerido' => 'boolean',
-            'fecha_entrega' => 'nullable|date',
-            'fecha_revision' => 'nullable|date',
-            'fecha_vencimiento' => 'nullable|date'
-        ]);
+        $validated = $request->validated();
 
-        // Guardar valores anteriores antes de actualizar
-        $valoresAnteriores = $documento->getAttributes();
-
-        $documento->fill($request->except('archivo'));
+        $documento->fill($validated);
 
         // Manejar nuevo archivo si se subió
         if ($request->hasFile('archivo')) {
@@ -221,23 +188,6 @@ class DocumentoController extends Controller
 
         $documento->save();
 
-        // Identificar cambios significativos
-        $campos = ['estado', 'fecha_entrega', 'fecha_vencimiento', 'fecha_revision', 'revisado_por', 'observaciones'];
-        $valoresNuevos = $documento->only($campos);
-        $valoresAnterioresSignificativos = array_intersect_key($valoresAnteriores, array_flip($campos));
-        
-        $cambios = array_diff_assoc($valoresNuevos, $valoresAnterioresSignificativos);
-
-        // Disparar evento si hubo cambios significativos
-        if (!empty($cambios)) {
-            event(new DocumentoActualizado(
-                $documento,
-                $cambios,
-                array_intersect_key($valoresAnteriores, array_flip($campos)),
-                Auth::id()
-            ));
-        }
-
         // Verificar si la petición viene de la vista del productor
         $referer = request()->headers->get('referer');
         $fromProductor = str_contains($referer, '/productores/');
@@ -255,9 +205,6 @@ class DocumentoController extends Controller
      */
     public function destroy(Documento $documento)
     {
-        // Guardar valores antes de eliminar
-        $valoresAnteriores = $documento->getAttributes();
-
         // Eliminar archivo si existe
         if ($documento->archivo_path) {
             Storage::disk('public')->delete($documento->archivo_path);
@@ -265,15 +212,8 @@ class DocumentoController extends Controller
 
         $documento->delete();
 
-        event(new DocumentoActualizado(
-            $documento,
-            [],
-            $valoresAnteriores,
-            Auth::id()
-        ));
-
         return redirect()->route('documentos.index')
-            ->with('success', "Documento: {$valoresAnteriores['nombre']}\nEstado anterior: {$valoresAnteriores['estado']}");
+            ->with('success', "Documento: {$documento->nombre} eliminado");
     }
 
     /**

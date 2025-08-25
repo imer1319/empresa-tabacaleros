@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\RegistraHistorial;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Documento extends Model
 {
+    use RegistraHistorial;
     protected $fillable = [
         'productor_id',
         'tipo_documento_id',
@@ -126,6 +129,14 @@ class Documento extends Model
     public function revisor()
     {
         return $this->belongsTo(User::class, 'revisado_por');
+    }
+
+    /**
+     * Relación con el historial
+     */
+    public function historial(): MorphMany
+    {
+        return $this->morphMany(Historial::class, 'modelo', 'modelo_type', 'modelo_id')->orderBy('created_at', 'desc');
     }
 
     /**

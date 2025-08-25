@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\RegistraHistorial;
 use Illuminate\Database\Eloquent\Model;
 
 class Productor extends Model
 {
+    use RegistraHistorial;
     protected $fillable = [
         'numero_productor',
         'nombre_completo',
@@ -31,7 +33,7 @@ class Productor extends Model
     // Relación con historial
     public function historial()
     {
-        return $this->hasMany(HistorialProductor::class)->orderBy('created_at', 'desc');
+        return $this->hasMany(Historial::class, 'productor_id')->orderBy('created_at', 'desc');
     }
 
     // Relación con citas

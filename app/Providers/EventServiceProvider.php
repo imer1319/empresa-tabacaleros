@@ -2,10 +2,6 @@
 
 namespace App\Providers;
 
-use App\Events\DocumentoActualizado;
-use App\Events\ProductorActualizado;
-use App\Listeners\RegistrarHistorialDocumento;
-use App\Listeners\RegistrarHistorialProductor;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -15,14 +11,7 @@ class EventServiceProvider extends ServiceProvider
      *
      * @var array<class-string, array<int, class-string>>
      */
-    protected $listen = [
-        ProductorActualizado::class => [
-            RegistrarHistorialProductor::class,
-        ],
-        DocumentoActualizado::class => [
-            RegistrarHistorialDocumento::class,
-        ],
-    ];
+    protected $listen = [];
 
     /**
      * Register any events for your application.

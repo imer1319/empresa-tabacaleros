@@ -471,6 +471,9 @@ const props = defineProps({
     tiposDocumento: Array,
 });
 
+console.log("Productor:", props.productor);
+console.log("Historial:", props.productor?.historial);
+
 // Variables reactivas para el modal de documentos
 const selectedDocumento = ref(null);
 
@@ -513,6 +516,19 @@ const formatDateOnly = (dateString) => {
         year: "numeric",
         month: "long",
         day: "numeric",
+        timeZone: "America/Argentina/Buenos_Aires",
+    });
+};
+
+const formatDateTime = (dateString) => {
+    if (!dateString) return "No especificada";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-AR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
         timeZone: "America/Argentina/Buenos_Aires",
     });
 };
