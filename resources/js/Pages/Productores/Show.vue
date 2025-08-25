@@ -2,7 +2,7 @@
     <AuthenticatedLayout>
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Detalles del Productor: {{ productor.nombre_completo }}
+                Detalles del Productor
             </h2>
         </template>
 
@@ -470,9 +470,6 @@ const props = defineProps({
     productor: Object,
     tiposDocumento: Array,
 });
-
-console.log("Productor:", props.productor);
-console.log("Historial:", props.productor?.historial);
 
 // Variables reactivas para el modal de documentos
 const selectedDocumento = ref(null);

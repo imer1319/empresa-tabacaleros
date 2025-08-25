@@ -140,7 +140,6 @@ class DocumentoController extends Controller
         $documento->load(['productor', 'tipoDocumento']);
         $tiposDocumento = TipoDocumento::activos()->ordenados()->get();
         $productores = Productor::orderBy('numero_productor')->get();
-
         return Inertia::render('Documentos/Edit', [
             'documento' => $documento,
             'tiposDocumento' => $tiposDocumento,
@@ -154,9 +153,7 @@ class DocumentoController extends Controller
     public function update(UpdateDocumentoRequest $request, Documento $documento)
     {
         $validated = $request->validated();
-
         $documento->fill($validated);
-
         // Manejar nuevo archivo si se subió
         if ($request->hasFile('archivo')) {
             // Eliminar archivo anterior si existe
@@ -196,7 +193,7 @@ class DocumentoController extends Controller
                 ->with('success', "Documento: {$documento->nombre}\nEstado: {$documento->estado}");
         }
 
-        return redirect()->route('documentos.show', $documento)
+        return redirect()->route('documentos.index')
             ->with('success', "Documento: {$documento->nombre}\nEstado: {$documento->estado}");
     }
 

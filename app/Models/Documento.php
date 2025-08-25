@@ -27,9 +27,9 @@ class Documento extends Model
     ];
 
     protected $casts = [
-        'fecha_entrega' => 'date',
-        'fecha_revision' => 'date',
-        'fecha_vencimiento' => 'date',
+        'fecha_entrega' => 'date:Y-m-d',
+        'fecha_vencimiento' => 'date:Y-m-d',
+        'fecha_revision' => 'date:Y-m-d',
         'es_requerido' => 'boolean',
         'archivo_tamaño' => 'integer'
     ];

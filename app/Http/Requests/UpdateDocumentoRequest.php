@@ -22,6 +22,7 @@ class UpdateDocumentoRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'productor_id' => 'required|exists:productors,id',
             'nombre' => 'required|string|max:255',
             'tipo_documento_id' => 'required|exists:tipo_documentos,id',
             'estado' => 'required|in:pendiente,entregado,aprobado,rechazado,vencido',
@@ -42,6 +43,8 @@ class UpdateDocumentoRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'productor_id.required' => 'El productor es requerido.',
+            'productor_id.exists' => 'El productor seleccionado no existe.',
             'nombre.required' => 'El nombre del documento es requerido.',
             'nombre.string' => 'El nombre debe ser texto.',
             'nombre.max' => 'El nombre no puede exceder los 255 caracteres.',

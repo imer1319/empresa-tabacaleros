@@ -119,9 +119,11 @@
                             <div class="flex justify-between items-center mb-4">
                                 <!-- Datos del usuario -->
                                 <div class="flex items-center">
-                                    <div class="flex-shrink-0 mr-1">
+                                    <div
+                                        class="bg-blue-600 p-2 rounded-lg mr-2"
+                                    >
                                         <svg
-                                            class="w-5 h-5 text-black"
+                                            class="w-5 h-5 text-white"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
