@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('tipo_documentos', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre'); // Nombre del tipo de documento (ej. "Contrato de siembra")
-            $table->text('descripcion')->nullable(); // Descripción del documento
-            $table->boolean('activo')->default(true); // Si está activo o no
-            $table->integer('orden')->default(0); // Orden de visualización
+            $table->string('nombre');
+            $table->text('descripcion')->nullable();
+            $table->boolean('activo')->default(true);
+            $table->integer('orden')->default(0);
             $table->timestamps();
         });
     }

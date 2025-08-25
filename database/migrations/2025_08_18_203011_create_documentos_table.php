@@ -15,17 +15,17 @@ return new class extends Migration
             $table->id();
             $table->foreignId('productor_id')->constrained('productors')->onDelete('cascade');
             $table->foreignId('tipo_documento_id')->constrained('tipo_documentos')->onDelete('cascade');
-            $table->string('nombre'); // Nombre del documento (ej. "Contrato de siembra")
+            $table->string('nombre');
             $table->enum('estado', ['pendiente', 'entregado', 'aprobado', 'rechazado', 'vencido'])->default('pendiente');
-            $table->string('archivo_path')->nullable(); // Ruta del archivo subido
-            $table->string('archivo_nombre')->nullable(); // Nombre original del archivo
-            $table->integer('archivo_tamaño')->nullable(); // Tamaño del archivo en bytes
-            $table->text('observaciones')->nullable(); // Observaciones o comentarios
-            $table->boolean('es_requerido')->default(true); // Si es un documento obligatorio
-            $table->date('fecha_entrega')->nullable(); // Fecha de entrega del documento
-            $table->date('fecha_revision')->nullable(); // Fecha de revisión
-            $table->date('fecha_vencimiento')->nullable(); // Fecha de vencimiento del documento
-            $table->unsignedBigInteger('revisado_por')->nullable(); // ID del usuario que revisó
+            $table->string('archivo_path')->nullable();
+            $table->string('archivo_nombre')->nullable();
+            $table->integer('archivo_tamaño')->nullable();
+            $table->text('observaciones')->nullable();
+            $table->boolean('es_requerido')->default(true);
+            $table->date('fecha_entrega')->nullable();
+            $table->date('fecha_revision')->nullable();
+            $table->date('fecha_vencimiento')->nullable();
+            $table->unsignedBigInteger('revisado_por')->nullable();
             $table->timestamps();
 
             $table->index(['productor_id', 'tipo_documento_id']);

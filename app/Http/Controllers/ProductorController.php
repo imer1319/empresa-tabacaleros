@@ -132,7 +132,6 @@ class ProductorController extends Controller
     public function destroy(Productor $productore)
     {
         $productore->delete();
-
         return redirect()->route('productores.index')
             ->with('success', 'Productor eliminado exitosamente.');
     }

@@ -99,10 +99,13 @@ class Historial extends Model
         ];
 
         // Si el modelo tiene productor_id o es un Productor, registramos el ID del productor
-        if (isset($modelo->productor_id)) {
-            $data['productor_id'] = $modelo->productor_id;
-        } elseif ($modelo instanceof Productor) {
-            $data['productor_id'] = $modelo->getKey();
+        // Solo si la operación no es de eliminación
+        if ($tipoOperacion !== 'eliminacion') {
+            if (isset($modelo->productor_id)) {
+                $data['productor_id'] = $modelo->productor_id;
+            } elseif ($modelo instanceof Productor) {
+                $data['productor_id'] = $modelo->getKey();
+            }
         }
 
         Log::info('Guardando registro de cambio:', ['data' => $data]);

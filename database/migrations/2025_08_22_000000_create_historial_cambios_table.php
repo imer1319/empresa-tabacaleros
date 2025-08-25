@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('historial_cambios', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('productor_id')->constrained('productors')->onDelete('cascade');
+            $table->foreignId('productor_id')->nullable()->constrained('productors')->nullOnDelete();
             $table->string('modelo_type');
             $table->unsignedBigInteger('modelo_id');
             $table->enum('tipo_operacion', ['creacion', 'actualizacion', 'eliminacion', 'restauracion']);
