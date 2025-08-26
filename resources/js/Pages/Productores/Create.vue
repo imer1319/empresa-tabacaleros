@@ -371,6 +371,526 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Sección 4: Información Productiva y Laboral -->
+                    <div
+                        class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6"
+                    >
+                        <div class="border-b border-gray-200">
+                            <div class="flex items-center px-6 pt-6">
+                                <div
+                                    class="flex items-center justify-center w-8 h-8 bg-purple-600 rounded-full mr-3"
+                                >
+                                    <svg
+                                        class="w-4 h-4 text-white"
+                                        fill="currentColor"
+                                        viewBox="0 0 20 20"
+                                    >
+                                        <path
+                                            d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"
+                                        ></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-medium text-gray-900">
+                                    Información Productiva y Laboral
+                                </h3>
+                            </div>
+                            <div class="p-6">
+                                <div
+                                    class="grid grid-cols-1 md:grid-cols-2 gap-6"
+                                >
+                                    <!-- Kilos Entregados -->
+                                    <div>
+                                        <label
+                                            for="kilos_entregados"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Kilos Entregados</label
+                                        >
+                                        <input
+                                            id="kilos_entregados"
+                                            v-model="form.kilos_entregados"
+                                            type="number"
+                                            step="0.01"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.kilos_entregados,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="errors.kilos_entregados"
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ errors.kilos_entregados }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Superficie Medida -->
+                                    <div>
+                                        <label
+                                            for="superficie_medida"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Superficie Medida (has)</label
+                                        >
+                                        <input
+                                            id="superficie_medida"
+                                            v-model="form.superficie_medida"
+                                            type="number"
+                                            step="0.01"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.superficie_medida,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="errors.superficie_medida"
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ errors.superficie_medida }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Empleados Convenio -->
+                                    <div>
+                                        <label
+                                            for="cant_empleados_convenio"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Cantidad Empleados Convenio</label
+                                        >
+                                        <input
+                                            id="cant_empleados_convenio"
+                                            v-model="
+                                                form.cant_empleados_convenio
+                                            "
+                                            type="number"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.cant_empleados_convenio,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="
+                                                errors.cant_empleados_convenio
+                                            "
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ errors.cant_empleados_convenio }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Total Salario Convenio -->
+                                    <div>
+                                        <label
+                                            for="total_salario_convenio"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Total Salario Convenio</label
+                                        >
+                                        <input
+                                            id="total_salario_convenio"
+                                            v-model="
+                                                form.total_salario_convenio
+                                            "
+                                            type="number"
+                                            step="0.01"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.total_salario_convenio,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="errors.total_salario_convenio"
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ errors.total_salario_convenio }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Empleados Fuera Convenio -->
+                                    <div>
+                                        <label
+                                            for="cant_empleados_fuera_convenio"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Cantidad Empleados Fuera
+                                            Convenio</label
+                                        >
+                                        <input
+                                            id="cant_empleados_fuera_convenio"
+                                            v-model="
+                                                form.cant_empleados_fuera_convenio
+                                            "
+                                            type="number"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.cant_empleados_fuera_convenio,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="
+                                                errors.cant_empleados_fuera_convenio
+                                            "
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{
+                                                errors.cant_empleados_fuera_convenio
+                                            }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Total Salario Fuera Convenio -->
+                                    <div>
+                                        <label
+                                            for="total_salario_fuera_convenio"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Total Salario Fuera Convenio</label
+                                        >
+                                        <input
+                                            id="total_salario_fuera_convenio"
+                                            v-model="
+                                                form.total_salario_fuera_convenio
+                                            "
+                                            type="number"
+                                            step="0.01"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.total_salario_fuera_convenio,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="
+                                                errors.total_salario_fuera_convenio
+                                            "
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{
+                                                errors.total_salario_fuera_convenio
+                                            }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Jornales y Cálculos -->
+                                    <div>
+                                        <label
+                                            for="jornal_promedio"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Jornal Promedio</label
+                                        >
+                                        <input
+                                            id="jornal_promedio"
+                                            v-model="form.jornal_promedio"
+                                            type="number"
+                                            step="0.01"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.jornal_promedio,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="errors.jornal_promedio"
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ errors.jornal_promedio }}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            for="ayc_sobre_jornal"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >AyC sobre Jornal</label
+                                        >
+                                        <input
+                                            id="ayc_sobre_jornal"
+                                            v-model="form.ayc_sobre_jornal"
+                                            type="number"
+                                            step="0.0001"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.ayc_sobre_jornal,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="errors.ayc_sobre_jornal"
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ errors.ayc_sobre_jornal }}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            for="formula"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Fórmula</label
+                                        >
+                                        <input
+                                            id="formula"
+                                            v-model="form.formula"
+                                            type="number"
+                                            step="0.0001"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.formula,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="errors.formula"
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ errors.formula }}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            for="total_ayc"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Total AyC</label
+                                        >
+                                        <input
+                                            id="total_ayc"
+                                            v-model="form.total_ayc"
+                                            type="number"
+                                            step="0.01"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.total_ayc,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="errors.total_ayc"
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ errors.total_ayc }}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            for="ts_determinada"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >TS Determinada</label
+                                        >
+                                        <input
+                                            id="ts_determinada"
+                                            v-model="form.ts_determinada"
+                                            type="number"
+                                            step="0.01"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.ts_determinada,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="errors.ts_determinada"
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ errors.ts_determinada }}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            for="total_ayc_unitario"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Total AyC Unitario</label
+                                        >
+                                        <input
+                                            id="total_ayc_unitario"
+                                            v-model="form.total_ayc_unitario"
+                                            type="number"
+                                            step="0.01"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.total_ayc_unitario,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="errors.total_ayc_unitario"
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ errors.total_ayc_unitario }}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            for="total_jornales"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Total Jornales</label
+                                        >
+                                        <input
+                                            id="total_jornales"
+                                            v-model="form.total_jornales"
+                                            type="number"
+                                            step="0.01"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.total_jornales,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="errors.total_jornales"
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ errors.total_jornales }}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            for="jornales_x_hectarea"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Jornales por Hectárea</label
+                                        >
+                                        <input
+                                            id="jornales_x_hectarea"
+                                            v-model="form.jornales_x_hectarea"
+                                            type="number"
+                                            step="0.0001"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.jornales_x_hectarea,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="errors.jornales_x_hectarea"
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ errors.jornales_x_hectarea }}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            for="jornales_x_hectarea_sin_ayc"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Jornales por Hectárea sin
+                                            AyC</label
+                                        >
+                                        <input
+                                            id="jornales_x_hectarea_sin_ayc"
+                                            v-model="
+                                                form.jornales_x_hectarea_sin_ayc
+                                            "
+                                            type="number"
+                                            step="0.0001"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.jornales_x_hectarea_sin_ayc,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="
+                                                errors.jornales_x_hectarea_sin_ayc
+                                            "
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{
+                                                errors.jornales_x_hectarea_sin_ayc
+                                            }}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            for="jornales_x_hectarea_acumulados"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Jornales por Hectárea
+                                            Acumulados</label
+                                        >
+                                        <input
+                                            id="jornales_x_hectarea_acumulados"
+                                            v-model="
+                                                form.jornales_x_hectarea_acumulados
+                                            "
+                                            type="number"
+                                            step="0.0001"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.jornales_x_hectarea_acumulados,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="
+                                                errors.jornales_x_hectarea_acumulados
+                                            "
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{
+                                                errors.jornales_x_hectarea_acumulados
+                                            }}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            for="dif_jornales_x_has"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Diferencia Jornales por
+                                            Hectárea</label
+                                        >
+                                        <input
+                                            id="dif_jornales_x_has"
+                                            v-model="form.dif_jornales_x_has"
+                                            type="number"
+                                            step="0.0001"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.dif_jornales_x_has,
+                                            }"
+                                        />
+                                        <div
+                                            v-if="errors.dif_jornales_x_has"
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ errors.dif_jornales_x_has }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Actividades -->
+                                    <div class="col-span-2">
+                                        <label
+                                            for="actividades"
+                                            class="block text-sm font-medium text-gray-700 mb-2"
+                                            >Actividades</label
+                                        >
+                                        <textarea
+                                            id="actividades"
+                                            v-model="form.actividades"
+                                            rows="3"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            :class="{
+                                                'border-red-500 focus:ring-red-500 focus:border-red-500':
+                                                    errors.actividades,
+                                            }"
+                                        ></textarea>
+                                        <div
+                                            v-if="errors.actividades"
+                                            class="mt-2 text-sm text-red-600"
+                                        >
+                                            {{ errors.actividades }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Botones -->
                     <div
                         class="bg-gray-50 px-6 py-4 flex items-center justify-end space-x-4"
@@ -424,6 +944,26 @@ export default {
             localidad: "",
             departamento: "",
             estado_documentacion: "",
+            kilos_entregados: "",
+            superficie_medida: "",
+            cant_empleados_convenio: "",
+            total_salario_convenio: "",
+            promedio_salario_convenio: "",
+            cant_empleados_fuera_convenio: "",
+            total_salario_fuera_convenio: "",
+            promedio_salario_fuera_convenio: "",
+            jornal_promedio: "",
+            ayc_sobre_jornal: "",
+            formula: "",
+            total_ayc: "",
+            ts_determinada: "",
+            total_ayc_unitario: "",
+            total_jornales: "",
+            jornales_x_hectarea: "",
+            jornales_x_hectarea_sin_ayc: "",
+            jornales_x_hectarea_acumulados: "",
+            dif_jornales_x_has: "",
+            actividades: "",
         });
 
         const cuitCuilError = ref("");

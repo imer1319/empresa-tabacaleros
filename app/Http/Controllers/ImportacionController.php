@@ -108,7 +108,17 @@ class ImportacionController extends Controller
             $data = $worksheet->rangeToArray('A1:' . $highestColumn . $highestRow);
 
             // Verificar encabezados
-            $encabezadosRequeridos = ['FET N°', 'Razon Social', 'Calle Dom Real', 'Localidad', 'CUIT'];
+            $encabezadosRequeridos = [
+                'FET N°', 'Razon Social', 'Calle Dom Real', 'Localidad', 'CUIT',
+                'Kilos Entregados', 'Superficie Medida',
+                'Empleados Convenio', 'Total Salario Convenio', 'Promedio Salario Convenio',
+                'Empleados Fuera Convenio', 'Total Salario Fuera Convenio', 'Promedio Salario Fuera Convenio',
+                'Jornal Promedio', 'AyC sobre Jornal', 'Formula', 'Total AyC',
+                'TS Determinada', 'Total AyC Unitario', 'Total Jornales',
+                'Jornales x Hectarea', 'Jornales x Hectarea sin AyC',
+                'Jornales x Hectarea Acumulados', 'Dif Jornales x Has',
+                'Actividades'
+            ];
             $encabezados = array_map('trim', $data[0]);
             $encabezadosFaltantes = array_diff($encabezadosRequeridos, $encabezados);
 
@@ -166,7 +176,27 @@ class ImportacionController extends Controller
                         'direccion' => $direccion,
                         'localidad' => $localidad,
                         'cuit_cuil' => $cuit,
-                        'estado_documentacion' => 'En proceso'
+                        'estado_documentacion' => 'En proceso',
+                        'kilos_entregados' => intval($fila[$indices['Kilos Entregados']] ?? 0),
+                        'superficie_medida' => floatval($fila[$indices['Superficie Medida']] ?? 0),
+                        'cant_empleados_convenio' => intval($fila[$indices['Empleados Convenio']] ?? 0),
+                        'total_salario_convenio' => floatval($fila[$indices['Total Salario Convenio']] ?? 0),
+                        'promedio_salario_convenio' => floatval($fila[$indices['Promedio Salario Convenio']] ?? 0),
+                        'cant_empleados_fuera_convenio' => intval($fila[$indices['Empleados Fuera Convenio']] ?? 0),
+                        'total_salario_fuera_convenio' => floatval($fila[$indices['Total Salario Fuera Convenio']] ?? 0),
+                        'promedio_salario_fuera_convenio' => floatval($fila[$indices['Promedio Salario Fuera Convenio']] ?? 0),
+                        'jornal_promedio' => floatval($fila[$indices['Jornal Promedio']] ?? 0),
+                        'ayc_sobre_jornal' => floatval($fila[$indices['AyC sobre Jornal']] ?? 0),
+                        'formula' => floatval($fila[$indices['Formula']] ?? 0),
+                        'total_ayc' => floatval($fila[$indices['Total AyC']] ?? 0),
+                        'ts_determinada' => floatval($fila[$indices['TS Determinada']] ?? 0),
+                        'total_ayc_unitario' => floatval($fila[$indices['Total AyC Unitario']] ?? 0),
+                        'total_jornales' => floatval($fila[$indices['Total Jornales']] ?? 0),
+                        'jornales_x_hectarea' => floatval($fila[$indices['Jornales x Hectarea']] ?? 0),
+                        'jornales_x_hectarea_sin_ayc' => floatval($fila[$indices['Jornales x Hectarea sin AyC']] ?? 0),
+                        'jornales_x_hectarea_acumulados' => floatval($fila[$indices['Jornales x Hectarea Acumulados']] ?? 0),
+                        'dif_jornales_x_has' => floatval($fila[$indices['Dif Jornales x Has']] ?? 0),
+                        'actividades' => trim($fila[$indices['Actividades']] ?? '')
                     ]);
 
                     $productoresCreados++;
