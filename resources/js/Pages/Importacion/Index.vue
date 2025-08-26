@@ -569,8 +569,8 @@
 
 <script setup>
 import { ref, reactive } from "vue";
+import { useForm, router } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import axios from "axios";
 
 // Estado de la aplicación
 const paso = ref(1);
@@ -614,27 +614,8 @@ const handleExcelChange = (event) => {
 const handleWordChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-        // Verificar que el archivo sea de tipo Word
-        if (!file.type.match('application/vnd.openxmlformats-officedocument.wordprocessingml.document|application/msword')) {
-            error.value = 'Por favor, seleccione un archivo Word (.docx, .doc)';
-            archivoWord.value = null;
-            event.target.value = '';
-            return;
-        }
-        
-        // Crear una copia del archivo para evitar problemas de referencia
-        const fileBlob = file.slice(0, file.size, file.type);
-        const newFile = new File([fileBlob], file.name, { type: file.type });
-        
-        archivoWord.value = newFile;
+        archivoWord.value = file;
         error.value = "";
-        
-        // Log para debug
-        console.log('Archivo Word seleccionado:', {
-            nombre: newFile.name,
-            tipo: newFile.type,
-            tamaño: newFile.size
-        });
     }
 };
 
@@ -661,15 +642,17 @@ const procesarArchivos = async () => {
     formData.append("plantilla_word", archivoWord.value);
 
     try {
-        const { data } = await axios.post(
-            "/importacion/procesar-excel",
-            formData,
-            {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            }
-        );
+        const response = await fetch("/importacion/procesar-excel", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRF-TOKEN": document
+                    .querySelector('meta[name="csrf-token"]')
+                    .getAttribute("content"),
+            },
+        });
+
+        const data = await response.json();
 
         if (data.success) {
             datosExcel.value = data.datos;
@@ -691,9 +674,20 @@ const importarProductores = async () => {
     error.value = "";
 
     try {
-        const { data } = await axios.post("/importacion/importar-productores", {
-            datos: datosExcel.value,
+        const response = await fetch("/importacion/importar-productores", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document
+                    .querySelector('meta[name="csrf-token"]')
+                    .getAttribute("content"),
+            },
+            body: JSON.stringify({
+                datos: datosExcel.value,
+            }),
         });
+
+        const data = await response.json();
 
         if (data.success) {
             resultadoImportacion.value = data;
@@ -711,58 +705,25 @@ const importarProductores = async () => {
 
 // Generación de documentos
 const generarDocumentos = async () => {
-    if (!archivoWord.value) {
-        error.value = "La plantilla Word es requerida";
-        return;
-    }
-
     generando.value = true;
     error.value = "";
 
     try {
-        const formData = new FormData();
-        
-        // Agregar el archivo Word
-        if (archivoWord.value instanceof File) {
-            // Crear una nueva copia del archivo para asegurar que se envíe correctamente
-            const fileBlob = archivoWord.value.slice(0, archivoWord.value.size, archivoWord.value.type);
-            const newFile = new File([fileBlob], archivoWord.value.name, { type: archivoWord.value.type });
-            formData.append("plantilla_word", newFile);
-            
-            // Log para debug
-            console.log('Archivo Word a enviar:', {
-                nombre: newFile.name,
-                tipo: newFile.type,
-                tamaño: newFile.size
-            });
-        } else {
-            throw new Error("El archivo Word no es válido");
-        }
-
-        // Agregar los datos como string
-        formData.append("datos", JSON.stringify(datosExcel.value));
-
-        // Agregar los campos de reemplazo como string
-        formData.append("campos_reemplazo", JSON.stringify(camposReemplazo));
-
-        // Usar fetch con modo no-cors
         const response = await fetch("/importacion/generar-documentos", {
             method: "POST",
-            body: formData,
             headers: {
-                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
-                "X-Requested-With": "XMLHttpRequest",
-                // NO establecer Content-Type, dejar que el navegador lo maneje
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document
+                    .querySelector('meta[name="csrf-token"]')
+                    .getAttribute("content"),
             },
-            credentials: "same-origin", // Importante para enviar cookies de sesión
+            body: JSON.stringify({
+                datos: datosExcel.value,
+                campos_reemplazo: camposReemplazo,
+            }),
         });
 
-        if (!response.ok) {
-            throw new Error(`Error en la solicitud: ${response.status} ${response.statusText}`);
-        }
-
         const data = await response.json();
-
 
         if (data.success) {
             documentosGenerados.value = data.documentos;
@@ -789,19 +750,22 @@ const descargarPdfConsolidado = async () => {
     error.value = "";
 
     try {
-        const response = await axios.post(
-            "/importacion/generar-pdf-consolidado",
-            {
-                documentos: documentosGenerados.value,
+        const response = await fetch("/importacion/generar-pdf-consolidado", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": document
+                    .querySelector('meta[name="csrf-token"]')
+                    .getAttribute("content"),
             },
-            {
-                responseType: "blob",
-            }
-        );
+            body: JSON.stringify({
+                documentos: documentosGenerados.value,
+            }),
+        });
 
-        if (response.status === 200) {
+        if (response.ok) {
             // Crear un blob con la respuesta PDF
-            const blob = response.data;
+            const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
 
             // Crear un enlace temporal para descargar
@@ -854,21 +818,39 @@ const generarPdfIndividual = async (nombreDocumento) => {
     error.value = "";
 
     try {
-        const response = await axios.post(
-            "/importacion/generar-pdf-individual",
-            {
-                datos: datosExcel.value,
-                campos_reemplazo: camposReemplazo,
-                nombre_documento: nombreDocumento
-            },
-            {
-                responseType: "blob",
-            }
+        // Encontrar el índice del documento en los datos del Excel
+        const filaIndex = documentosGenerados.value.findIndex(
+            (doc) => doc.nombre === nombreDocumento
         );
 
-        if (response.status === 200) {
+        if (filaIndex === -1) {
+            error.value = "No se pudo encontrar el documento en los datos";
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("archivo_excel", archivoExcel.value);
+        formData.append("plantilla_word", archivoWord.value);
+        formData.append("fila_index", filaIndex.toString());
+
+        // Enviar campos_reemplazo como campos individuales del array
+        Object.keys(camposReemplazo).forEach((key) => {
+            formData.append(`campos_reemplazo[${key}]`, camposReemplazo[key]);
+        });
+
+        const response = await fetch("/importacion/generar-pdf-individual", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRF-TOKEN": document
+                    .querySelector('meta[name="csrf-token"]')
+                    .getAttribute("content"),
+            },
+        });
+
+        if (response.ok) {
             // Crear un blob con la respuesta PDF
-            const blob = response.data;
+            const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
 
             // Crear un enlace temporal para descargar
@@ -886,7 +868,8 @@ const generarPdfIndividual = async (nombreDocumento) => {
 
             mensaje.value = "PDF individual generado y descargado exitosamente";
         } else {
-            error.value = "Error al generar PDF individual";
+            const data = await response.json();
+            error.value = data.message || "Error al generar PDF individual";
         }
     } catch (err) {
         error.value = "Error al generar PDF individual: " + err.message;
@@ -1044,16 +1027,15 @@ const volverPaso1 = () => {
 };
 
 const reiniciar = () => {
-    // Solo limpiar los archivos si estamos volviendo al paso 1
-    if (paso.value === 3) {
-        archivoExcel.value = null;
-        archivoWord.value = null;
-    }
     paso.value = 1;
+    archivoExcel.value = null;
+    archivoWord.value = null;
     datosExcel.value = [];
     resultadoImportacion.value = null;
     documentosGenerados.value = [];
     generandoPdfIndividual.value = {};
+    enviandoEmail.value = {};
+    generandoPdfDirecto.value = false;
     error.value = "";
     mensaje.value = "";
 };
