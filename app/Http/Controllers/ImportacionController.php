@@ -15,6 +15,7 @@ use PhpOffice\PhpWord\Writer\HTML as HTMLWriter;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class ImportacionController extends Controller
 {
@@ -159,7 +160,7 @@ class ImportacionController extends Controller
                 }
 
                 try {
-                    Productor::create([
+                    $productor = Productor::create([
                         'numero_productor' => $numeroProductor,
                         'nombre_completo' => $nombreCompleto,
                         'direccion' => $direccion,
@@ -167,6 +168,7 @@ class ImportacionController extends Controller
                         'cuit_cuil' => $cuit,
                         'estado_documentacion' => 'En proceso'
                     ]);
+
                     $productoresCreados++;
                 } catch (\Exception $e) {
                     Log::error("Error al crear productor: " . $e->getMessage());
@@ -208,6 +210,7 @@ class ImportacionController extends Controller
             ], 422);
         }
 
+        DB::beginTransaction();
         try {
             // Log para depuración
             Log::info('Datos recibidos para generar documentos:', [
@@ -231,6 +234,21 @@ class ImportacionController extends Controller
             file_put_contents($tempPlantillaPath, base64_decode($plantillaContent));
 
             foreach ($request->datos as $index => $dato) {
+                // Buscar o crear el productor
+                $productor = Productor::where(function($query) use ($dato) {
+                    $query->where('numero_productor', $dato['fet_numero'])
+                          ->orWhere('cuit_cuil', $dato['cuit']);
+                })->first();
+
+                if (!$productor) {
+                    $productor = Productor::create([
+                        'numero_productor' => $dato['fet_numero'],
+                        'nombre_completo' => $dato['razon_social'],
+                        'cuit_cuil' => $dato['cuit'],
+                        'estado_documentacion' => 'En proceso'
+                    ]);
+                }
+
                 // Crear una copia de la plantilla para cada registro
                 $templateProcessor = new TemplateProcessor($tempPlantillaPath);
 
@@ -242,13 +260,40 @@ class ImportacionController extends Controller
                     $templateProcessor->setValue($campo, $valor);
                 }
 
-                // Generar nombre único para el archivo usando razón social
-                $razonSocialLimpia = preg_replace('/[^A-Za-z0-9_-]/', '_', $dato['razon_social'] ?? 'Sin_nombre');
-                $nombreArchivo = $razonSocialLimpia . '_' . time() . '.docx';
-                $rutaDestino = 'documentos_generados/' . $nombreArchivo;
+                // Crear nombre único del archivo usando timestamp y hash
+                $timestamp = time();
+                $hash = substr(md5(uniqid()), 0, 8);
+                $nombreBase = str_replace(' ', '_', $dato['razon_social']);
+                $nombreArchivo = $timestamp . '_' . $hash . '_' . $nombreBase . '.docx';
+                $rutaDestino = 'public/documentos/' . $nombreArchivo;
+
+                // Asegurar que el directorio existe
+                $directorioDestino = storage_path('app/public/documentos');
+                if (!file_exists($directorioDestino)) {
+                    mkdir($directorioDestino, 0755, true);
+                }
 
                 // Guardar el documento procesado
-                $templateProcessor->saveAs(storage_path('app/' . $rutaDestino));
+                $rutaCompleta = storage_path('app/' . $rutaDestino);
+                $templateProcessor->saveAs($rutaCompleta);
+
+                // Obtener el peso del archivo
+                $pesoArchivo = file_exists($rutaCompleta) ? filesize($rutaCompleta) : 0;
+
+
+
+                // Crear documento automáticamente
+                $fechaVencimiento = now();
+                $productor->documentos()->create([
+                    'tipo_documento_id' => 9,
+                    'nombre' => $nombreArchivo,
+                    'ubicacion' => $rutaDestino,
+                    'peso' => $pesoArchivo,
+                    'estado' => 'pendiente',
+                    'es_requerido' => true,
+                    'fecha_entrega' => $fechaVencimiento,
+                    'fecha_vencimiento' => $fechaVencimiento
+                ]);
 
                 $documentosGenerados[] = [
                     'nombre' => $nombreArchivo,
@@ -265,12 +310,14 @@ class ImportacionController extends Controller
             // Limpiar datos de sesión
             $request->session()->forget(['plantilla_word_content', 'plantilla_word_name']);
 
+            DB::commit();
             return response()->json([
                 'success' => true,
                 'documentos' => $documentosGenerados,
                 'message' => 'Se generaron ' . count($documentosGenerados) . ' documentos correctamente.'
             ]);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Error al generar documentos: ' . $e->getMessage()

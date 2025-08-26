@@ -74,9 +74,7 @@ defineProps({
                                     Total Productores
                                 </p>
                                 <p class="text-xs text-green-600 mt-1">
-                                    +{{
-                                        estadisticas.nuevosProductoresMes
-                                    }}
+                                    +{{ estadisticas.nuevosProductoresMes }}
                                     este mes
                                 </p>
                             </div>
@@ -156,9 +154,7 @@ defineProps({
                                     Documentos Pendientes
                                 </p>
                                 <p class="text-xs text-red-600 mt-1">
-                                    -{{
-                                        estadisticas.documentosPendientesAyer
-                                    }}
+                                    -{{ estadisticas.documentosPendientesAyer }}
                                     desde ayer
                                 </p>
                             </div>
@@ -307,7 +303,10 @@ defineProps({
                                                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                                                     ></path>
                                                     <path
-                                                        v-else-if="actividad.tipo === 'vencimiento'"
+                                                        v-else-if="
+                                                            actividad.tipo ===
+                                                            'vencimiento'
+                                                        "
                                                         stroke-linecap="round"
                                                         stroke-linejoin="round"
                                                         stroke-width="2"
