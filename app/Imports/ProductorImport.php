@@ -79,7 +79,6 @@ class ProductorImport implements ToModel, WithHeadingRow, WithStartRow, WithVali
 
         if ($productor) {
             // Si existe, actualizar sus datos con los nuevos valores
-            $productor->update($datos);
             return $productor;
         }
 

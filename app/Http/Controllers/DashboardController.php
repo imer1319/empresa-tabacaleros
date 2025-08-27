@@ -103,6 +103,10 @@ class DashboardController extends Controller
 
         // Ordenar por fecha y limitar a 10 actividades
         $actividadesRecientes = $actividadesRecientes->sortByDesc('fecha')->take(10)->values();
+        $totalSumaKilosEntregados = Productor::sum('kilos_entregados');
+        $totalSumaSuperficieMedida = Productor::sum('superficie_medida');
+        $cantidadProductordifmenor = Productor::where('dif_jornales_x_has', '<', 0)->count();
+        $productoresDifMenor = Productor::where('dif_jornales_x_has', '<', 0)->get();
 
         // Obtener estado de documentos por tipo
         $tiposDocumento = [
@@ -114,6 +118,10 @@ class DashboardController extends Controller
 
         return Inertia::render('Dashboard', [
             'estadisticas' => [
+                'cantidadProductordifmenor' => $cantidadProductordifmenor,
+                'productoresDifMenor' => $productoresDifMenor,
+                'totalSumaSuperficieMedida' => $totalSumaSuperficieMedida,
+                'totalSumaKilosEntregados' => $totalSumaKilosEntregados,
                 'totalProductores' => $totalProductores,
                 'nuevosProductoresMes' => $nuevosProductoresMes,
                 'documentosAprobados' => $documentosAprobados,

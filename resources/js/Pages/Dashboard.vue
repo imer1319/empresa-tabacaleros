@@ -1,8 +1,10 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head } from "@inertiajs/vue3";
+import { Head, Link } from "@inertiajs/vue3";
+import Modal from "@/Components/Modal.vue";
+import { ref } from "vue";
 
-defineProps({
+const props = defineProps({
     estadisticas: {
         type: Object,
         required: true,
@@ -24,6 +26,13 @@ defineProps({
         default: () => ({}),
     },
 });
+const formatNumber = (value) => {
+    return new Intl.NumberFormat("es-AR").format(value);
+};
+const showProductorModal = ref(false);
+const closeModal = () => {
+    showProductorModal.value = false;
+};
 </script>
 
 <template>
@@ -51,30 +60,30 @@ defineProps({
                                 <div
                                     class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center"
                                 >
-                                    <svg
-                                        class="w-6 h-6 text-white"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
+                                    <span
+                                        class="material-symbols-outlined text-white"
                                     >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                                        ></path>
-                                    </svg>
+                                        groups
+                                    </span>
                                 </div>
                             </div>
                             <div class="ml-4">
                                 <p class="text-2xl font-bold text-gray-900">
-                                    {{ estadisticas.totalProductores }}
+                                    {{
+                                        formatNumber(
+                                            estadisticas.totalProductores
+                                        )
+                                    }}
                                 </p>
                                 <p class="text-sm text-gray-600">
                                     Total Productores
                                 </p>
                                 <p class="text-xs text-green-600 mt-1">
-                                    +{{ estadisticas.nuevosProductoresMes }}
+                                    +{{
+                                        formatNumber(
+                                            estadisticas.nuevosProductoresMes
+                                        )
+                                    }}
                                     este mes
                                 </p>
                             </div>
@@ -90,19 +99,11 @@ defineProps({
                                 <div
                                     class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center"
                                 >
-                                    <svg
-                                        class="w-6 h-6 text-white"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
+                                    <span
+                                        class="material-symbols-outlined text-white"
                                     >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                        ></path>
-                                    </svg>
+                                        docs
+                                    </span>
                                 </div>
                             </div>
                             <div class="ml-4">
@@ -201,8 +202,218 @@ defineProps({
                             </div>
                         </div>
                     </div>
+                    <!-- Kilos entregados -->
+                    <div
+                        class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                    >
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div
+                                    class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center"
+                                >
+                                    <span
+                                        class="material-symbols-outlined text-white"
+                                    >
+                                        weight
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-2xl font-bold text-gray-900">
+                                    {{
+                                        formatNumber(
+                                            estadisticas.totalSumaKilosEntregados
+                                        )
+                                    }}
+                                </p>
+                                <p class="text-sm text-gray-600">
+                                    Total kilos entregados
+                                </p>
+                                <p class="text-xs text-green-600 mt-1">
+                                    +{{
+                                        estadisticas.comunicacionesEnviadasHoy
+                                    }}
+                                    hoy
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Superficia medida -->
+                    <div
+                        class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                    >
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div
+                                    class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center"
+                                >
+                                    <span
+                                        class="material-symbols-outlined text-white"
+                                    >
+                                        wounds_injuries
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-2xl font-bold text-gray-900">
+                                    {{
+                                        formatNumber(
+                                            estadisticas.totalSumaSuperficieMedida
+                                        )
+                                    }}
+                                </p>
+                                <p class="text-sm text-gray-600">
+                                    Total supericie de medida
+                                </p>
+                                <p class="text-xs text-green-600 mt-1">
+                                    +{{
+                                        estadisticas.comunicacionesEnviadasHoy
+                                    }}
+                                    hoy
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Cantidad productores dif JHAS -->
+                    <a
+                        @click.prevent="showProductorModal = true"
+                        class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                    >
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div
+                                    class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center"
+                                >
+                                    <span
+                                        class="material-symbols-outlined text-white"
+                                    >
+                                        person_cancel
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-2xl font-bold text-gray-900">
+                                    {{
+                                        formatNumber(
+                                            estadisticas.cantidadProductordifmenor
+                                        )
+                                    }}
+                                </p>
+                                <p class="text-sm text-gray-600">
+                                    Productores dif < 0
+                                </p>
+                                <p class="text-xs text-green-600 mt-1">
+                                    +{{
+                                        estadisticas.comunicacionesEnviadasHoy
+                                    }}
+                                    hoy
+                                </p>
+                            </div>
+                        </div>
+                    </a>
                 </div>
-
+                <Modal
+                    :show="showProductorModal"
+                    title="Listado de productores"
+                    @close="closeModal"
+                    maxWidth="4xl"
+                >
+                    <div class="overflow-x-auto p-6">
+                        <div class="text-lg mb-4 text-center">
+                            Listado de usuarios con dif menor a 0
+                        </div>
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                    >
+                                        Número
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                    >
+                                        Nombre Completo
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                    >
+                                        CUIT/CUIL
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                    >
+                                        dif de J/HAS
+                                    </th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                    >
+                                        Acciones
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr
+                                    v-for="productor in estadisticas.productoresDifMenor"
+                                    :key="productor.id"
+                                >
+                                    <td
+                                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                    >
+                                        {{ productor.numero_productor }}
+                                    </td>
+                                    <td
+                                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                    >
+                                        {{ productor.nombre_completo }}
+                                    </td>
+                                    <td
+                                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                    >
+                                        {{ productor.cuit_cuil }}
+                                    </td>
+                                    <td
+                                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                    >
+                                        {{ productor.dif_jornales_x_has }}
+                                    </td>
+                                    <td
+                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium"
+                                    >
+                                        <Link
+                                            :href="
+                                                route(
+                                                    'productores.show',
+                                                    productor.id
+                                                )
+                                            "
+                                            class="text-indigo-600 hover:text-indigo-900 mr-3 inline-flex items-center outline-none"
+                                            title="Ver"
+                                        >
+                                            <span
+                                                class="material-symbols-outlined"
+                                            >
+                                                visibility
+                                            </span>
+                                        </Link>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="flex justify-end space-x-3 pt-4">
+                            <button
+                                type="button"
+                                @click="showProductorModal = false"
+                                class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 transition-colors duration-150 ease-in-out focus:outline-none"
+                            >
+                                <span class="material-symbols-outlined"
+                                    >close</span
+                                >
+                                Cerrar ventana
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
                 <!-- Contenido principal -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <!-- Actividad Reciente -->
@@ -437,7 +648,8 @@ defineProps({
                         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
                     >
                         <!-- Nuevo Productor -->
-                        <div
+                        <Link
+                            :href="route('productores.create')"
                             class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
                         >
                             <div class="flex items-center">
@@ -464,10 +676,11 @@ defineProps({
                                     </p>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
 
                         <!-- Subir Documento -->
-                        <div
+                        <Link
+                            :href="route('documentos.create')"
                             class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
                         >
                             <div class="flex items-center">
@@ -494,7 +707,7 @@ defineProps({
                                     </p>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
 
                         <!-- Enviar Comunicación -->
                         <div

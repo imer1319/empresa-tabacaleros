@@ -28,7 +28,7 @@ class ProductorController extends Controller
         }
 
 
-        $productores = $query->orderBy('nombre_completo')->paginate(10);
+        $productores = $query->orderBy('id', 'desc')->paginate(10);
 
         return Inertia::render('Productores/Index', [
             'productores' => $productores,
