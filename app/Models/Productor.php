@@ -17,7 +17,6 @@ class Productor extends Model
         'direccion',
         'localidad',
         'departamento',
-        'estado_documentacion',
         'kilos_entregados',
         'superficie_medida',
         'cant_empleados_convenio',
@@ -41,7 +40,6 @@ class Productor extends Model
     ];
 
     protected $casts = [
-        'estado_documentacion' => 'string',
         'kilos_entregados' => 'integer',
         'superficie_medida' => 'decimal:2',
         'cant_empleados_convenio' => 'integer',

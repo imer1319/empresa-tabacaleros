@@ -22,7 +22,6 @@ class ProductorRequest extends FormRequest
             'direccion' => ['required', 'string', 'max:255'],
             'localidad' => ['required', 'string', 'max:255'],
             'departamento' => ['required', 'string', 'max:255'],
-            'estado_documentacion' => ['required', 'string', 'in:En proceso,Aprobado,Faltante']
         ];
     }
 
@@ -44,9 +43,7 @@ class ProductorRequest extends FormRequest
             'localidad.required' => 'La localidad es obligatoria',
             'localidad.max' => 'La localidad no puede tener más de 255 caracteres',
             'departamento.required' => 'El departamento es obligatorio',
-            'departamento.max' => 'El departamento no puede tener más de 255 caracteres',
-            'estado_documentacion.required' => 'El estado de documentación es obligatorio',
-            'estado_documentacion.in' => 'El estado de documentación debe ser: En proceso, Aprobado o Faltante'
+            'departamento.max' => 'El departamento no puede tener más de 255 caracteres'
         ];
     }
 }

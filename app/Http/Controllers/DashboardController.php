@@ -84,7 +84,7 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($cita) {
                 $tipo = 'comunicacion';
-                $accion = match($cita->estado) {
+                $accion = match ($cita->estado) {
                     'programada' => 'programó',
                     'completada' => 'completó',
                     'cancelada' => 'canceló'

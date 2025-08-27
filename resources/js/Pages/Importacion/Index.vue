@@ -74,8 +74,8 @@
                                                 </button>
                                             </p>
                                             <p class="text-xs text-gray-500">
-                                                Formato: FET N°, Razón Social,
-                                                Calle Dom Real, Localidad, CUIT
+                                                Formato: El archivo debe tener encabezados en la fila 6 y datos desde la fila 7.
+                                                Campos: N° Grupo, Productor, CUIT, Kilos, Superficie, Empleados, Salarios, Jornales y Cálculos.
                                             </p>
                                         </div>
                                         <div v-else class="text-green-600">
@@ -147,8 +147,8 @@
                                                 </button>
                                             </p>
                                             <p class="text-xs text-gray-500">
-                                                Use campos como {fet_numero},
-                                                {razon_social}, etc.
+                                                Use campos como {nro_grupo},
+                                                {productor}, {cuit}, {kilos}, {superficie}, etc.
                                             </p>
                                         </div>
                                         <div v-else class="text-green-600">
@@ -226,66 +226,51 @@
                                     >
                                         <thead class="bg-gray-50">
                                             <tr>
-                                                <th
-                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                                >
-                                                    FET N°
-                                                </th>
-                                                <th
-                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                                >
-                                                    Razón Social
-                                                </th>
-                                                <th
-                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                                >
-                                                    Dirección
-                                                </th>
-                                                <th
-                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                                >
-                                                    Localidad
-                                                </th>
-                                                <th
-                                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                                                >
-                                                    CUIT
-                                                </th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">N° Grupo</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Productor</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CUIT</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kilos</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Superficie</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empleados Conv.</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salario Conv.</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jornal Prom.</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AyC s/Jornal</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total AyC</th>
                                             </tr>
                                         </thead>
                                         <tbody
                                             class="bg-white divide-y divide-gray-200"
                                         >
-                                            <tr
-                                                v-for="(
-                                                    dato, index
-                                                ) in datosExcel.slice(0, 5)"
-                                                :key="index"
-                                            >
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                                                >
-                                                    {{ dato.fet_numero }}
+                                            <tr v-for="(dato, index) in datosExcel.slice(0, 5)" :key="index" class="bg-white">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {{ dato['Nro de Grupo Economico'] }}
                                                 </td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                                                >
-                                                    {{ dato.razon_social }}
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {{ dato['Productor Cabeza de Grupo'] }}
                                                 </td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                                                >
-                                                    {{ dato.calle_dom_real }}
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {{ dato['Cuit Productor'] }}
                                                 </td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                                                >
-                                                    {{ dato.localidad }}
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {{ dato['Kilos Entregados'] }}
                                                 </td>
-                                                <td
-                                                    class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                                                >
-                                                    {{ dato.cuit }}
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {{ dato['Superficie Medida'] }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {{ dato['Cant.Empleados Convenio'] }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {{ dato['Total Salario Convenio'] }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {{ dato['Jornal Promedio'] }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {{ dato['A Y C s/jornal'] }}
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {{ dato['Total A y C'] }}
                                                 </td>
                                             </tr>
                                         </tbody>

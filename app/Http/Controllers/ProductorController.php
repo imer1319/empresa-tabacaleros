@@ -27,16 +27,12 @@ class ProductorController extends Controller
             });
         }
 
-        // Filtro por estado de documentación
-        if ($request->has('estado') && $request->estado) {
-            $query->where('estado_documentacion', $request->estado);
-        }
 
         $productores = $query->orderBy('nombre_completo')->paginate(10);
 
         return Inertia::render('Productores/Index', [
             'productores' => $productores,
-            'filters' => $request->only(['search', 'estado'])
+            'filters' => $request->only(['search'])
         ]);
     }
 
@@ -62,7 +58,6 @@ class ProductorController extends Controller
             'direccion' => 'required|string',
             'localidad' => 'required|string|max:255',
             'departamento' => 'required|string|max:255',
-            'estado_documentacion' => 'required|in:En proceso,Aprobado,Faltante'
         ]);
 
         $productor = Productor::create($validated);
@@ -117,7 +112,6 @@ class ProductorController extends Controller
             'direccion' => 'required|string',
             'localidad' => 'required|string|max:255',
             'departamento' => 'required|string|max:255',
-            'estado_documentacion' => 'required|in:En proceso,Aprobado,Faltante'
         ]);
 
         $productore->update($validated);

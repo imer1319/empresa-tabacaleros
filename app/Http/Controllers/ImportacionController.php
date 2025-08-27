@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\ProductorImport;
 use App\Models\Productor;
+use Exception;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;
-use PhpOffice\PhpWord\IOFactory;
-use PhpOffice\PhpWord\TemplateProcessor;
-use Illuminate\Support\Facades\Validator;
-use Dompdf\Dompdf;
-use Dompdf\Options;
-use PhpOffice\PhpWord\Writer\HTML as HTMLWriter;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Exception;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\TemplateProcessor;
+use PhpOffice\PhpWord\Writer\HTML as HTMLWriter;
 
 class ImportacionController extends Controller
 {
@@ -36,32 +36,16 @@ class ImportacionController extends Controller
         }
 
         try {
-            // Procesar archivo Excel directamente desde el archivo temporal
-            $excelFile = $request->file('archivo_excel');
-            $spreadsheet = SpreadsheetIOFactory::load($excelFile->getPathname());
-            $worksheet = $spreadsheet->getActiveSheet();
-
+            // Procesar archivo Excel usando la clase de importación
+            $import = new \App\Imports\ProductorImport();
             $datos = [];
-            $filaInicio = 2; // Asumiendo que la fila 1 tiene encabezados
 
-            foreach ($worksheet->getRowIterator($filaInicio) as $row) {
-                $cellIterator = $row->getCellIterator();
-                $cellIterator->setIterateOnlyExistingCells(false);
-
-                $fila = [];
-                foreach ($cellIterator as $cell) {
-                    $fila[] = $cell->getValue();
-                }
-
-                // Verificar que la fila no esté vacía
-                if (!empty(array_filter($fila))) {
-                    $datos[] = [
-                        'fet_numero' => $fila[0] ?? '',
-                        'razon_social' => $fila[1] ?? '',
-                        'calle_dom_real' => $fila[2] ?? '',
-                        'localidad' => $fila[3] ?? '',
-                        'cuit' => $fila[4] ?? ''
-                    ];
+            // Recolectar datos sin guardarlos
+            $import->toArray($request->file('archivo_excel'));
+            $rows = $import->toArray($request->file('archivo_excel'))[0];
+            foreach ($rows as $row) {
+                if (!empty(array_filter($row))) {
+                    $datos[] = $row;
                 }
             }
 
@@ -100,124 +84,22 @@ class ImportacionController extends Controller
         }
 
         try {
-            $archivo = $request->file('archivo');
-            $spreadsheet = SpreadsheetIOFactory::load($archivo->getPathname());
-            $worksheet = $spreadsheet->getActiveSheet();
-            $highestRow = $worksheet->getHighestRow();
-            $highestColumn = $worksheet->getHighestColumn();
-            $data = $worksheet->rangeToArray('A1:' . $highestColumn . $highestRow);
+            $import = new ProductorImport();
+            $import->import($request->file('archivo'));
 
-            // Verificar encabezados
-            $encabezadosRequeridos = [
-                'FET N°', 'Razon Social', 'Calle Dom Real', 'Localidad', 'CUIT',
-                'Kilos Entregados', 'Superficie Medida',
-                'Empleados Convenio', 'Total Salario Convenio', 'Promedio Salario Convenio',
-                'Empleados Fuera Convenio', 'Total Salario Fuera Convenio', 'Promedio Salario Fuera Convenio',
-                'Jornal Promedio', 'AyC sobre Jornal', 'Formula', 'Total AyC',
-                'TS Determinada', 'Total AyC Unitario', 'Total Jornales',
-                'Jornales x Hectarea', 'Jornales x Hectarea sin AyC',
-                'Jornales x Hectarea Acumulados', 'Dif Jornales x Has',
-                'Actividades'
-            ];
-            $encabezados = array_map('trim', $data[0]);
-            $encabezadosFaltantes = array_diff($encabezadosRequeridos, $encabezados);
-
-            if (!empty($encabezadosFaltantes)) {
-                return back()->withErrors([
-                    'archivo' => 'Faltan las siguientes columnas requeridas: ' . implode(', ', $encabezadosFaltantes)
-                ]);
-            }
-
-            // Mapear índices de columnas
-            $indices = array_flip($encabezados);
-
-            // Procesar datos
-            $errores = [];
-            $productoresCreados = 0;
-            $productoresExistentes = 0;
-
-            for ($i = 1; $i < count($data); $i++) {
-                $fila = $data[$i];
-
-                // Verificar si la fila está vacía
-                if (empty(array_filter($fila))) {
-                    continue;
-                }
-
-                // Obtener y limpiar valores
-                $cuit = trim($fila[$indices['CUIT']]);
-                $numeroProductor = trim($fila[$indices['FET N°']]);
-                $nombreCompleto = trim($fila[$indices['Razon Social']]);
-                $direccion = trim($fila[$indices['Calle Dom Real']]);
-                $localidad = trim($fila[$indices['Localidad']]);
-
-                // Verificar datos requeridos
-                if (empty($cuit) || empty($numeroProductor) || empty($nombreCompleto)) {
-                    $errores[] = "Fila " . ($i + 1) . ": Faltan datos requeridos (CUIT, FET N° o Razón Social)";
-                    continue;
-                }
-
-                // Validar CUIT
-                if (!preg_match('/^\d{11}$/', $cuit)) {
-                    $errores[] = "Fila " . ($i + 1) . ": El CUIT debe contener 11 dígitos. CUIT: {$cuit}";
-                    continue;
-                }
-
-                // Verificar duplicados
-                if (Productor::where('cuit_cuil', $cuit)->orWhere('numero_productor', $numeroProductor)->exists()) {
-                    $productoresExistentes++;
-                    continue;
-                }
-
-                try {
-                    $productor = Productor::create([
-                        'numero_productor' => $numeroProductor,
-                        'nombre_completo' => $nombreCompleto,
-                        'direccion' => $direccion,
-                        'localidad' => $localidad,
-                        'cuit_cuil' => $cuit,
-                        'estado_documentacion' => 'En proceso',
-                        'kilos_entregados' => intval($fila[$indices['Kilos Entregados']] ?? 0),
-                        'superficie_medida' => floatval($fila[$indices['Superficie Medida']] ?? 0),
-                        'cant_empleados_convenio' => intval($fila[$indices['Empleados Convenio']] ?? 0),
-                        'total_salario_convenio' => floatval($fila[$indices['Total Salario Convenio']] ?? 0),
-                        'promedio_salario_convenio' => floatval($fila[$indices['Promedio Salario Convenio']] ?? 0),
-                        'cant_empleados_fuera_convenio' => intval($fila[$indices['Empleados Fuera Convenio']] ?? 0),
-                        'total_salario_fuera_convenio' => floatval($fila[$indices['Total Salario Fuera Convenio']] ?? 0),
-                        'promedio_salario_fuera_convenio' => floatval($fila[$indices['Promedio Salario Fuera Convenio']] ?? 0),
-                        'jornal_promedio' => floatval($fila[$indices['Jornal Promedio']] ?? 0),
-                        'ayc_sobre_jornal' => floatval($fila[$indices['AyC sobre Jornal']] ?? 0),
-                        'formula' => floatval($fila[$indices['Formula']] ?? 0),
-                        'total_ayc' => floatval($fila[$indices['Total AyC']] ?? 0),
-                        'ts_determinada' => floatval($fila[$indices['TS Determinada']] ?? 0),
-                        'total_ayc_unitario' => floatval($fila[$indices['Total AyC Unitario']] ?? 0),
-                        'total_jornales' => floatval($fila[$indices['Total Jornales']] ?? 0),
-                        'jornales_x_hectarea' => floatval($fila[$indices['Jornales x Hectarea']] ?? 0),
-                        'jornales_x_hectarea_sin_ayc' => floatval($fila[$indices['Jornales x Hectarea sin AyC']] ?? 0),
-                        'jornales_x_hectarea_acumulados' => floatval($fila[$indices['Jornales x Hectarea Acumulados']] ?? 0),
-                        'dif_jornales_x_has' => floatval($fila[$indices['Dif Jornales x Has']] ?? 0),
-                        'actividades' => trim($fila[$indices['Actividades']] ?? '')
-                    ]);
-
-                    $productoresCreados++;
-                } catch (\Exception $e) {
-                    Log::error("Error al crear productor: " . $e->getMessage());
-                    $errores[] = "Fila " . ($i + 1) . ": Error al crear el productor - " . $e->getMessage();
-                }
-            }
-
-            $mensaje = "Se importaron {$productoresCreados} productores exitosamente.";
-            if ($productoresExistentes > 0) {
-                $mensaje .= " Se omitieron {$productoresExistentes} productores por estar duplicados.";
-            }
-
-            if (!empty($errores)) {
-                return back()->withErrors([
-                    'archivo' => $errores
-                ])->with('success', $mensaje);
-            }
-
+            $mensaje = "Se importaron los productores exitosamente.";
             return back()->with('success', $mensaje);
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errores = [];
+
+            foreach ($failures as $failure) {
+                $errores[] = "Fila {$failure->row()}: {$failure->errors()[0]}";
+            }
+
+            return back()->withErrors([
+                'archivo' => $errores
+            ]);
         } catch (\Exception $e) {
             Log::error("Error al procesar archivo Excel: " . $e->getMessage());
             return back()->withErrors([
@@ -265,9 +147,9 @@ class ImportacionController extends Controller
 
             foreach ($request->datos as $index => $dato) {
                 // Buscar o crear el productor
-                $productor = Productor::where(function($query) use ($dato) {
+                $productor = Productor::where(function ($query) use ($dato) {
                     $query->where('numero_productor', $dato['fet_numero'])
-                          ->orWhere('cuit_cuil', $dato['cuit']);
+                        ->orWhere('cuit_cuil', $dato['cuit']);
                 })->first();
 
                 if (!$productor) {
@@ -275,7 +157,6 @@ class ImportacionController extends Controller
                         'numero_productor' => $dato['fet_numero'],
                         'nombre_completo' => $dato['razon_social'],
                         'cuit_cuil' => $dato['cuit'],
-                        'estado_documentacion' => 'En proceso'
                     ]);
                 }
 
@@ -309,9 +190,6 @@ class ImportacionController extends Controller
 
                 // Obtener el peso del archivo
                 $pesoArchivo = file_exists($rutaCompleta) ? filesize($rutaCompleta) : 0;
-
-
-
                 // Crear documento automáticamente
                 $fechaVencimiento = now();
                 $productor->documentos()->create([

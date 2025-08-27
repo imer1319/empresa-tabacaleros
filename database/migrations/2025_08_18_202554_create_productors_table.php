@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -14,8 +15,8 @@ return new class extends Migration
         Schema::create('productors', function (Blueprint $table) {
             $table->id();
             $table->string('numero_productor')->unique(); // Nro de Grupo Económico
-            $table->string('nombre_completo');            // Productor Cabeza de Grupo
-            $table->string('cuit_cuil')->unique();
+            $table->string('nombre_completo')->nullable();            // Productor Cabeza de Grupo
+            $table->string('cuit_cuil')->nullable();
 
             // ---- Info de contacto ----
             $table->string('telefono')->nullable();
@@ -23,7 +24,6 @@ return new class extends Migration
             $table->text('direccion')->nullable();
             $table->string('localidad')->nullable();
             $table->string('departamento')->nullable();
-            $table->enum('estado_documentacion', ['En proceso', 'Aprobado', 'Faltante'])->default('En proceso');
 
             // ---- Datos productivos ----
             $table->bigInteger('kilos_entregados')->nullable();
@@ -58,6 +58,7 @@ return new class extends Migration
 
             $table->timestamps();
         });
+        DB::statement('CREATE UNIQUE INDEX unique_cuit_cuil_not_null ON productors (cuit_cuil) WHERE cuit_cuil IS NOT NULL AND cuit_cuil != \'\';');
     }
 
     /**
@@ -65,6 +66,8 @@ return new class extends Migration
      */
     public function down(): void
     {
+        DB::statement('DROP INDEX IF EXISTS unique_cuit_cuil_not_null;');
+
         Schema::dropIfExists('productors');
     }
 };
